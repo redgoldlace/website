@@ -1,0 +1,9 @@
+{% extends "base" %}
+{% block title -%} heck... {% endblock title %}
+{% block navbar -%} {% endblock navbar -%}
+{% block content %}
+<div class="center">
+  <h1>heck...</h1>
+  {{ reason }}
+</div>
+{% endblock content %}

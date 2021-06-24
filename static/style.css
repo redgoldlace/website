@@ -1,0 +1,327 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap");
+/* My color names are perfect. */
+
+:root {
+  --fainter: #787891;
+  --faint: #5C5C70;
+  --greyish: #2e2e38;
+  --blackish: #1c1c22;
+  --sakura: #FCC5D3;
+  --warm-pink: #f99fb4;
+  --warmer-pink: #f55178;
+  --hot-pink: #f32b5a;
+  --sky: #67aaf9;
+  --emerald: #62c370;
+  --plain: #f6f4f3;
+}
+
+body {
+  background-color: var(--blackish);
+  color: var(--plain);
+  display: flex;
+  flex-direction: column;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 400;
+  margin: 0 auto;
+}
+
+/* I'm not sure if this is really the greatest approach here. From the testing I did it seemed fine though. */
+
+@media screen and (max-width: 1000px) {
+  body {
+    font-size: 200%;
+    width: 87.5%;
+  }
+}
+
+@media screen and (min-width: 1000px) {
+  body {
+    width: 900px;
+  }
+}
+
+@media screen and (min-width: 1700px) {
+  body {
+    width: 1500px;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--hot-pink);
+  font-weight: 700;
+  /* Margins for headers look better consistent */
+  margin: 1.5rem 0;
+}
+
+a {
+  color: var(--plain);
+  text-decoration-color: var(--warm-pink);
+}
+
+a:hover {
+  text-decoration-color: var(--warmer-pink);
+}
+
+/* Inline code needs its own rounding and background. We also need to change the font. */
+
+code {
+  background-color: var(--greyish);
+  border-radius: 0.25rem;
+  color: var(--sakura);
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 400;
+  padding: 0.1rem;
+}
+
+pre {
+  border-radius: 0.5rem;
+  background-color: var(--greyish);
+  padding: 0.5rem;
+  white-space: pre-wrap;
+}
+
+/* Code inside a `pre` block does not need the styling that inline code does. */
+
+pre code {
+  border-radius: 0rem;
+  color: var(--plain);
+  padding: 0rem;
+  max-width: 100%;
+}
+
+hr {
+  border: 1px solid var(--faint);
+  width: 100%;
+}
+
+blockquote {
+  background-color: var(--greyish);
+  border-left: 0.5rem solid var(--hot-pink);
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  margin: auto 0;
+}
+
+blockquote p {
+  margin: 0.25rem 0rem;
+}
+
+/* Borders need to be collapsed otherwise they look extremely ugly. */
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+/* Any text in a table header gets to be pretty. */
+
+thead {
+  color: var(--hot-pink);
+}
+
+td, th {
+  border: 1px solid var(--fainter);
+  padding: 0.5rem 0.5rem;
+}
+
+li::marker {
+  color: var(--hot-pink);
+}
+
+img {
+  border-radius: 0.25rem;
+  max-width: 100%;
+  width: 100%;
+}
+
+.image-row img {
+  margin: 0.5rem;
+}
+
+.image-row img:first-of-type {
+  margin-left: 0;
+}
+
+.image-row img:last-of-type {
+  margin-right: 0;
+}
+
+.image-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  min-width: none;
+}
+
+/* This is dumb and hacky and bad. But I suck at CSS so.. it works? */
+
+@media screen and (max-width: 1000px) {
+  .image-row img {
+    margin: 0.5rem;
+  }
+  .image-row {
+    flex-direction: column;
+  }
+  .image-row img:first-of-type {
+    margin-left: 0.5rem;
+    margin-top: 0;
+  }
+  .image-row img:last-of-type {
+    margin-right: 0.5rem;
+    margin-bottom: 0;
+  }
+}
+
+/* This is used on the error page. It's also kinda a meme. */
+
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.navbar {
+  display: flex;
+  margin: 1.5rem 0;
+  justify-content: left;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+}
+
+@media screen and (max-width: 1000px) {
+  .navbar {
+    flex-direction: column;
+    align-self: center;
+    align-items: stretch;
+    flex-grow: 1;
+  }
+}
+
+.navbar-logo {
+  background-color: var(--hot-pink);
+  color: var(--blackish);
+  display: inline-block;
+  font-size: 3rem;
+  margin: 0;
+  padding: 0.5rem 1rem;
+}
+
+.navbar-content {
+  padding: 0 1rem;
+}
+
+.navbar-rest {
+  background-image: repeating-linear-gradient(to right, var(--hot-pink), var(--hot-pink) 0.5rem, var(--blackish) 0.5rem, var(--blackish) 1rem);
+  display: inline-flex;
+  align-self: stretch;
+  background-color: var(--hot-pink);
+  flex-grow: 1;
+}
+
+@media screen and (max-width: 1000px) {
+  .navbar-logo {
+    align-self: stretch;
+    text-align: center;
+  }
+  .navbar-content {
+    align-self: center;
+    margin: 0.5rem 0;
+  }
+  .navbar-rest {
+    display: none;
+  }
+}
+
+.post-header {
+  margin-bottom: 0;
+}
+
+/* This is a callout. */
+
+.unimportant {
+  color: var(--fainter);
+  margin-top: 0;
+}
+
+/* Now comes HL.js hell. */
+
+.hljs {
+  background: var(--greyish);
+  color: var(--plain);
+  display: block;
+}
+
+.hljs-doctag, .hljs-meta-keyword, .hljs-name, .hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-code, .hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-section, .hljs-tag {
+  color: var(--sky);
+}
+
+.hljs-selector-class, .hljs-selector-id, .hljs-template-variable, .hljs-variable {
+  color: var(--sky);
+}
+
+.hljs-meta-string, .hljs-string {
+  color: var(--warm-pink);
+}
+
+.hljs-attr, .hljs-quote, .hljs-selector-attr {
+  color: var(--emerald);
+}
+
+.hljs-tag .hljs-attr {
+  color: inherit;
+}
+
+.hljs-attribute, .hljs-title {
+  color: var(--sakura);
+}
+
+.hljs-built_in, .hljs-literal, .hljs-number, .hljs-symbol, .hljs-type {
+  color: var(--warmer-pink);
+}
+
+.hljs-bullet, .hljs-template-tag {
+  color: var(--plain);
+}
+
+.hljs-keyword, .hljs-selector-tag {
+  color: var(--fainter);
+}
+
+.hljs-code, .hljs-comment, .hljs-formula {
+  color: var(--faint);
+}
+
+.hljs-link, .hljs-selector-pseudo, .hljs-regexp {
+  color: var(--warm-pink);
+}
+
+.hljs-meta {
+  color: var(--hot-pink);
+}
+
+.hljs-deletion {
+  color: var(--hot-pink);
+}
+
+.hljs-addition {
+  color: var(--emerald);
+}
+
+.hljs-operator, .hljs-params, .hljs-property, .hljs-punctuation {
+  color: var(--plain);
+}
+
+.hljs-subst {
+  color: var(--plain);
+}

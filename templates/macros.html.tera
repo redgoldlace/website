@@ -1,0 +1,3 @@
+{% macro published_at(when) %}
+<h3 class="unimportant">Published {{ when | date(format="%d-%m-%Y at %H:%M") }} ({{ when | humanise }})</h3>
+{% endmacro input %}

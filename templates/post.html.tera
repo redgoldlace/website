@@ -1,0 +1,8 @@
+{% extends "page" %}
+{% import "macros" as macros %}
+{% block title -%} {{ title }} {% endblock title %}
+{% block content %}
+<h1 class="post-header">{{ title }}</h1>
+{{ macros::published_at(when=published) }}
+{{ content | safe }}
+{% endblock content %}

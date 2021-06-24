@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% block head %}
+  <meta charset="utf-8" />
+  <title>{% block title %} Kaylynn {% endblock title %}</title>
+  <meta name="author" content="Kaylynn" />
+  <link rel="stylesheet" href="/style.css" />
+  {% endblock head %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/highlight.min.js"></script>
+  <script>
+    hljs.highlightAll();
+  </script>
+</head>
+
+{% block navbar %}
+<nav class="navbar">
+  <script type='text/javascript' src='/tinycolor.js'></script>
+  <script>
+    function gay() {
+      let sheet = document.styleSheets[0];
+      let rules = Array.from(sheet.cssRules);
+      let root_rule = rules.find(rule => rule.cssText.startsWith(":root"));
+
+      // I've got no clue if there's a better way to do this.
+      // It doesn't seem like there's an iteration protocol for this kind of element?
+      let ruleNames = [];
+      for (let i of Array(root_rule.style.length).keys()) {
+        ruleNames.push(root_rule.style[i])
+      }
+
+      const cycle = function () {
+        for (let ruleName of ruleNames) {
+          let color = tinycolor(window.getComputedStyle(document.documentElement).getPropertyValue(ruleName)).spin(1).toHexString();
+          document.documentElement.style.setProperty(ruleName, color);
+        }
+      };
+
+      window.setInterval(cycle, 33);
+    }
+  </script>
+
+  <h1 class="navbar-logo" onclick="gay()">kaylynn.gay</h1>
+  <a class="navbar-content" href="/">Home</a>
+  <a class="navbar-content" href="/about">About me</a>
+  <a class="navbar-content" href="/blog">Blog</a>
+  <div class="navbar-rest"></div>
+
+</nav>
+{% endblock navbar %}
+
+<body>
+  {% block content %}{% endblock content %}
+</body>
+
+</html>
