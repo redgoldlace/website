@@ -7,6 +7,7 @@
   <title>{% block title %} Kaylynn {% endblock title %}</title>
   <meta name="author" content="Kaylynn" />
   <link rel="stylesheet" href="/style.css" />
+  <link rel="shortcut icon" type="image/png" href="favicon.png" />
   {% endblock head %}
   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/highlight.min.js"></script>
   <script>

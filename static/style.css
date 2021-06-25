@@ -25,11 +25,19 @@ body {
   margin: 0 auto;
 }
 
+/* This is an attempt at fixing an absolutely vexing display inconsistency on firefox mobile */
+html, body {
+  text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  -ms-text-size-adjust: none;
+}
+
 /* I'm not sure if this is really the greatest approach here. From the testing I did it seemed fine though. */
 
 @media screen and (max-width: 1000px) {
   body {
-    font-size: 200%;
+    font-size: 2.65rem;
     width: 87.5%;
   }
 }
