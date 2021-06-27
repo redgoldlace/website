@@ -5,8 +5,8 @@ If you're just here for the blog (why would you do that) you can find that [here
 Otherwise, here's some photos of my cat:
 
 <div class="image-row">
-  <img src="/cat.png">
-  <img src="/cat2.jpg">
+  <img src="/cat.webp">
+  <img src="/cat2.webp">
 </div>
 
 Her name is Nicky and I love her very much.
