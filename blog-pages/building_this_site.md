@@ -311,13 +311,13 @@ pub async fn try_update(&mut self) -> Result<(), Error> {
 ```
 I even added a little comment to remind myself. Just in case I forgot.
 If you're wondering how this actually *works*, here's an explanation:
-1. We try to create a new instance of `Config`.
-   If this fails, the error is returned and control goes back to the caller - this is the `?` operator at play.
-2. We swap the memory position of the *actual* instance, and the new instance. In essence, our old config instance
-   gets moved into the `result` variable, and then the new config instance gets put where it used to be.
-3. The method returns the unit type wrapped in `Ok()` to symbolise success, and control goes back to the caller.
-   Except this is Rust! So when the method returns, destructors are called to clean up any values in scope.
-   Because of our evil with memory swapping, this means our *old* config gets cleaned up as part of this.
+1.  We try to create a new instance of `Config`.
+    If this fails, the error is returned and control goes back to the caller - this is the `?` operator at play.
+2.  We swap the memory position of the *actual* instance, and the new instance. In essence, our old config instance
+    gets moved into the `result` variable, and then the new config instance gets put where it used to be.
+3.  The method returns the unit type wrapped in `Ok()` to symbolise success, and control goes back to the caller.
+    Except this is Rust! So when the method returns, destructors are called to clean up any values in scope.
+    Because of our evil with memory swapping, this means our *old* config gets cleaned up as part of this.
 
 It's such a dumb and hacky solution to this kinda problem. But it makes me giggle, so I guess it's worth it.
 
