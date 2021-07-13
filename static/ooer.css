@@ -1,0 +1,238 @@
+/*------------------------------------------------
+
+    /r/Ooer CSS
+    Bringing beautiful to your browser
+        since the Industrial Revolution.
+    The collaborative effort of:
+    /u/Ooer, /u/thelethalkind, /u/Wisey,
+        /u/williammck, /u/Niyx, and /u/twilexis
+
+    "you have the best css"
+        - Chattanooga, 2017-04-30
+
+------------------------------------------------*/
+
+/*------------------------------------------------
+
+    Sullied slightly to work on my web server.
+
+    - Kaylynn, in all of Her illustrious glory
+
+------------------------------------------------*/
+
+/* Begin custom cursor */
+* {
+    cursor: url("sock.png"), auto;
+}
+/* End custom cursor */
+
+/* Begin text styling */
+body {
+    background: #FFB057 url("bbc.png");
+    font-family: "Comic Sans MS", "Comic Sans", "Chalkboard", "Coming Soon";
+    font-size: 25px !important;
+    text-transform: uppercase;
+}
+h1 {
+    color: green !important;
+    text-align: center;
+}
+p {
+    border: 20px solid red;
+    background: yellow;
+    font-family: "Courier New", monospace !important;
+    font-size: 25px;
+}
+.md p {
+    font-family: "Arial", sans-serif !important;
+}
+a:hover {
+    font-size: 350px;
+    color: green;
+}
+/* End text styling */
+
+/* Begin header styling */
+#header {
+    background-color: #FF00FF;
+}
+/* End header styling */
+
+/* Begin sidebar styling */
+.side {
+    background-color: blue;
+}
+.titlebox .number {
+    color: purple;
+    font-weight: bold;
+}
+.titlebox .number:before {
+    content: "pots and pans";
+}
+.titlebox .number:after {
+    content: "hammocks are love";
+}
+.titlebox .word {
+    display: none;
+}
+/* End sidebar styling */
+
+/* Begin post styling */
+.title a:before {
+    content: url(%%jizz%%);
+}
+/* End post styling */
+
+/* Begin footer styling */
+.footer-parent {
+    clear: both;
+    height: 800px;
+    width: 100%;
+    padding: 0;
+    text-align: center;
+}
+.footer-parent:after {
+    content: "â™¥â™¥â™¥ liek dis cry evertim ";
+    background: white;
+    font-size: 120px;
+}
+/* End footer styling */
+
+/* Begin announcement sticky */
+div.content {
+    margin-top: 50px;
+}
+.titlebox form {
+    position: static;
+}
+.side h3:nth-of-type(1) {
+    position: absolute;
+    top: 130px;
+    left: 40px;
+    display: block;
+    width: 50%;
+    padding: 7px 0px 7px 40px;
+    border-radius: 8px;
+    margin: 15px;
+    background: #119911;
+    color: #555555;
+    text-align: left;
+}
+/* End announcement sticky */
+
+/* Begin author styling */
+.link:not(.spam) .author,
+.comment .author,
+.side .author,
+.userattrs {
+    display: none;
+}
+.spam .author + * {
+    display: none !important;
+}
+.author + *:before {
+    content: "Anonymous ";
+    color: #369;
+}
+.comment .author + *:before {
+    font-weight: bold;
+}
+.author.moderator + *:after,
+.side .author + *:after {
+    content: " ## Mod ##";
+    color: #900;
+}
+/* End author styling */
+
+/* Begin OH MAN */
+p:after {
+    content: "oh man i am not good with computer plz to help";
+}
+a:after {
+    content: "oh man i am not good with computer plz to help";
+}
+body:after {
+    content: "oh man i am not good with computer plz to help";
+    font-size: 120px;
+}
+/* End OH MAN */
+
+/* Begin floating images */
+.titlebox .md h5 {
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+}
+.titlebox .md h5:after {
+    visibility: visible;
+    position: fixed;
+    z-index: 99;
+}
+/* 5 of these available for use: h5 elements containing a zero width non-joiner in the sidebar */
+.titlebox .md h5:nth-of-type(1):after {
+    content: url(%%8yZxfKq%%);
+    bottom: 0;
+    left: 0;
+}
+.titlebox .md h5:nth-of-type(2):after {
+    content: url(%%garlic%%);
+    bottom: 0;
+    right: 0;
+    animation: garlicspin 4s linear infinite;
+}
+@keyframes garlicspin {
+    100% { transform: rotate(360deg); }
+}
+/* End floating images */
+
+/* Begin #header-img background color change */
+@keyframes header-img {
+    0%   { background: red; }
+    25%  { background: yellow; }
+    50%  { background: blue; }
+    75%  { background: green; }
+    100% { background: red; }
+}
+#header-img {
+    animation: header-img 5s linear infinite;
+}
+/* End #header-img background color change */
+
+/* Begin Report button rainbow colors */
+.reportbtn, .titlebox .md h6 {
+    -webkit-background-clip: text;
+    background-image: linear-gradient(124deg, #ff2400, #e81d1d, #e8b71d, #e3e81d, #1de840, #1ddde8, #2b1de8, #dd00f3, #dd00f3);
+    background-size: 1800% 1800%;
+    color: transparent !important;
+    animation: rainbow 18s linear infinite;
+}
+
+@keyframes rainbow {
+    0%   { background-position: 0% 82%; }
+    50%  { background-position: 100% 19%; }
+    100% { background-position: 0% 82%; }
+}
+/* End rainbow */
+
+/* twilexis class shenanigans */
+.titlebox .md h6 {
+    position: absolute;
+    z-index: 100000;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    font-size: 15vw;
+    text-align: center;
+}
+/* end */
+
+/*------------------------------------------------------
+BIG DOG = BEST DOG BIG DOG = BEST DOG BIG DOG = BEST DOG
+BIG DOG = BEST DOG BIG DOG = BEST DOG BIG DOG = BEST DOG
+BIG DOG = BEST DOG BIG DOG = BEST DOG BIG DOG = BEST DOG
+BIG DOG = BEST DOG BIG DOG = BEST DOG BIG DOG = BEST DOG
+BIG DOG = BEST DOG BIG DOG = BEST DOG BIG DOG = BEST DOG
+BIG DOG = BEST DOG BIG DOG = BEST DOG BIG DOG = BEST DOG
+BIG DOG = BEST DOG BIG DOG = BEST DOG BIG DOG = BEST DOG
+-------------------------------------------------------*/

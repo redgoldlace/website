@@ -36,6 +36,59 @@
 
       window.setInterval(cycle, 33);
     }
+
+    function arrayIsEqual(first, second) {
+      return (
+        Array.isArray(first)
+        && Array.isArray(second)
+        && first.length === second.length
+        && first.every((item, index) => item === second[index])
+      )
+
+    }
+
+    let konamiCode = [
+      "ArrowUp",
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowLeft",
+      "ArrowRight",
+      "b",
+      "a",
+    ];
+
+    let lastKeypress = 0;
+    let keys = [];
+    let ooerized = false;
+
+    window.addEventListener("keydown", event => {
+      if (ooerized || event.isComposing || event.keyCode === 229) {
+        return;
+      }
+
+      let now = Date.now() / 1000 | 0;
+      if (now - lastKeypress > 5) {
+        keys = [];
+      }
+
+      lastKeypress = now;
+      keys.push(event.key);
+
+      // For some reason comparing arrays with `==` just.. doesn't work. What a joke.
+      if (arrayIsEqual(keys.slice(-10), konamiCode)) {
+        console.log("yes")
+        document.head.insertAdjacentHTML(
+          "beforeend",
+          '<link rel="stylesheet" href="ooer.css" />'
+        );
+        ooerized = true;
+        delete keys;
+        delete lastKeypress;
+      }
+    });
   </script>
 
   <h1 class="navbar-logo" onclick="gay()">kaylynn.gay</h1>
