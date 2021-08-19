@@ -1,3 +1,8 @@
+---
+title = "Text editors"
+published = 2021-07-03T23:26:00
+---
+
 Text editors. Text editors. Text editors.  
 I could probably also title this "why is everything terrible". Oh well.
 

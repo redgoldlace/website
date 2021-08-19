@@ -1,43 +1,32 @@
+#![feature(try_blocks)]
+
+use hmac::Hmac;
+use lazy_static::lazy_static;
 use page::Config;
-use rocket::{
-    self, catchers,
-    fs::FileServer,
-    routes,
-    tokio::{self, sync::RwLock},
-};
+use rocket::{self, catchers, fs::FileServer, routes, tokio::sync::RwLock};
 use rocket_dyn_templates::Template;
-use std::{sync::Arc, time::Duration};
+use sha2::Sha256;
 
 mod page;
 mod routes;
 mod tera_utils;
 
 /// Alias for convenience
-pub type WrappedConfig = Arc<RwLock<Config>>;
+pub type WrappedConfig = RwLock<Config>;
+pub type WrappedSecret = Hmac<Sha256>;
 
-async fn refresh_config(config: WrappedConfig) {
-    // Realistically it's probably better to only do this if we detect changes. But this is fine for now.
-
-    loop {
-        if let Err(error) = config.write().await.try_update().await {
-            eprintln!("Unable to update configuration: {}", error);
-        }
-
-        tokio::time::sleep(Duration::from_secs(60)).await;
-    }
+lazy_static! {
+    pub static ref SECRET: String = std::env::var("WEBHOOK_SECRET")
+        .expect("the WEBHOOK_SECRET environment variable is required");
 }
 
-#[rocket::main]
-async fn main() {
-    let config = Arc::new(RwLock::new(
-        page::Config::try_new()
-            .await
-            .expect("unable to open page config"),
-    ));
+#[rocket::launch]
+async fn launch() -> _ {
+    // This is bad but I'm tired. Essentially we want to have this built here so that we panic at startup if things go
+    // wrong.
+    &*SECRET;
 
-    tokio::spawn(refresh_config(Arc::clone(&config)));
-
-    let _ = rocket::build()
+    rocket::build()
         .register("/", catchers![routes::default_catcher])
         .mount(
             "/",
@@ -45,7 +34,8 @@ async fn main() {
                 routes::home,
                 routes::about_me,
                 routes::post,
-                routes::post_list
+                routes::post_list,
+                routes::refresh_pages,
             ],
         )
         .mount("/", FileServer::from("static/"))
@@ -54,7 +44,9 @@ async fn main() {
                 .tera
                 .register_filter("humanise", tera_utils::humanise)
         }))
-        .manage(config)
-        .launch()
-        .await;
+        .manage(RwLock::new(
+            page::Config::try_new()
+                .await
+                .expect("unable to open page config"),
+        ))
 }

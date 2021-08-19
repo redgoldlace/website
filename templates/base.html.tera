@@ -44,7 +44,6 @@
         && first.length === second.length
         && first.every((item, index) => item === second[index])
       )
-
     }
 
     let konamiCode = [

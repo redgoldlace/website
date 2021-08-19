@@ -1,3 +1,8 @@
+---
+title = "Building this site"
+published = 2021-06-24T21:35:00
+---
+
 I'd like to think I did a decent job building this site - in fact, I'm pretty happy with it.
 It's taken me the last couple days, and I don't have any other ideas for a first post.
 So let's stick with this.

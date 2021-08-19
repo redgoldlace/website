@@ -1,3 +1,8 @@
+---
+title = "On today's frame of mind"
+published = 2021-06-22T19:46:00
+---
+
 > You can walk the path among the lines  
 > With your shattered frame of mind
 

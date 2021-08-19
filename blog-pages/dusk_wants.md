@@ -1,3 +1,8 @@
+---
+title = "Dusk musings"
+published = 2021-07-11T11:18:00
+---
+
 If you've talked to me recently you probably know what Dusk is. I have a bad habit of infecting discussions with
 language design woes - of which I have many. If you haven't talked to me lately, I'll do you a favour and give you a
 quick explanation: It's a programming language I've been spending the past little while working on. I'm still a bit torn

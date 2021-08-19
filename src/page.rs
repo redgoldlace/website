@@ -1,11 +1,14 @@
 use chrono::{DateTime, Local, TimeZone};
-use comrak::{ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions};
+use comrak::{
+    nodes::{AstNode, NodeValue},
+    Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
+};
 use indexmap::IndexMap;
 use lazy_static::lazy_static;
 use rocket::{
     response::Responder,
     serde::{de, Deserialize, Serialize},
-    tokio::fs::read_to_string,
+    tokio::fs::{read_dir, read_to_string},
     Request,
 };
 use rocket_dyn_templates::Template;
@@ -32,6 +35,7 @@ lazy_static! {
             autolink: true,
             tasklist: true,
             description_lists: true,
+            front_matter_delimiter: Some("---".to_owned()),
             ..Default::default()
         },
         render: ComrakRenderOptions {
@@ -127,32 +131,87 @@ where
         .map_err(|_| de::Error::custom("failed to parse date"))
 }
 
+type R = Result<(), ()>;
+
+fn iter_nodes<'a>(node: &'a AstNode<'a>, mut f: impl FnMut(&'a AstNode<'a>) -> R) -> R {
+    fn _iter_nodes<'a>(node: &'a AstNode<'a>, f: &mut impl FnMut(&'a AstNode<'a>) -> R) -> R {
+        f(node)?;
+        for c in node.children() {
+            _iter_nodes(c, f)?;
+        }
+
+        Ok(())
+    }
+
+    _iter_nodes(node, &mut f)
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct PostInfo {
     pub title: String,
     #[serde(deserialize_with = "deserialize_config_date")]
     pub published: DateTime<Local>,
+    #[serde(skip_deserializing)]
+    pub content: String,
 }
 
-#[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
 pub struct Config {
     pub pages: IndexMap<String, PostInfo>,
 }
 
 impl Config {
+    pub fn new(pages: IndexMap<String, PostInfo>) -> Self {
+        Self { pages }
+    }
+
     pub async fn try_new() -> Result<Self, Error> {
-        let page_config = read_to_string(&Path::new("Meta.toml"))
-            .await
-            .map_err(Into::<Error>::into)?;
+        let mut pages = IndexMap::new();
+        let mut entries = read_dir("blog-pages").await?;
 
-        let mut config: Config = toml::from_str(&page_config)?;
-        config
-            .pages
-            .sort_by(|_, first, _, second| second.published.cmp(&first.published));
+        while let Some(entry) = entries.next_entry().await? {
+            let filename = entry
+                .path()
+                .file_stem()
+                .map_or_else(String::new, |filename| {
+                    filename.to_string_lossy().into_owned()
+                });
 
-        Ok(config)
+            let page_content = read_to_string(entry.path()).await?;
+            let arena = Arena::new();
+            let root = comrak::parse_document(&arena, &page_content, &OPTIONS);
+
+            let mut front_matter = None;
+
+            let _ = iter_nodes(root, |node| match &node.data.borrow().value {
+                NodeValue::FrontMatter(bytes) => {
+                    front_matter.replace(String::from_utf8_lossy(bytes).into_owned());
+                    Err(())
+                }
+                _ => Ok(()),
+            });
+
+            let page = toml::from_str::<PostInfo>(
+                front_matter
+                    .unwrap_or_else(String::new)
+                    .trim()
+                    .trim_start_matches("---")
+                    .trim_end_matches("---"),
+            )
+            .map(|page| PostInfo {
+                content: page_content,
+                ..page
+            });
+
+            match page {
+                Ok(page) => {
+                    pages.insert(filename, page);
+                }
+                Err(error) => eprintln!("Error while opening post at {}: {}", filename, error),
+            }
+        }
+
+        Ok(Self::new(pages))
     }
 
     pub async fn try_update(&mut self) -> Result<(), Error> {

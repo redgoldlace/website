@@ -1,10 +1,12 @@
 use crate::{
     context,
     page::{Page, PageKind},
-    WrappedConfig,
+    WrappedConfig, SECRET,
 };
-use rocket::{http::Status, Request, State};
-use std::path::PathBuf;
+use hmac::{Hmac, Mac, NewMac};
+use rocket::{http::Status, outcome::Outcome, request::FromRequest, Request, State};
+use sha2::Sha256;
+use std::{path::PathBuf, process::Command};
 
 #[rocket::catch(default)]
 pub fn default_catcher(status: Status, _: &Request) -> Page {
@@ -78,4 +80,47 @@ pub async fn post(config: &State<WrappedConfig>, slug: PathBuf) -> Option<Page> 
     );
 
     Some(result)
+}
+
+pub struct MatchingSecret;
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for MatchingSecret {
+    type Error = &'static str;
+
+    async fn from_request(request: &'r Request<'_>) -> rocket::request::Outcome<Self, Self::Error> {
+        let request_secret = request
+            .headers()
+            .get_one("X-Hub-Signature-256")
+            .and_then(|signature| signature.trim().strip_prefix("sha256="))
+            .unwrap_or("")
+            .trim();
+
+        let secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes())
+            .unwrap()
+            .finalize()
+            .into_bytes();
+
+        println!("{} vs {}", request_secret, hex::encode(secret.as_slice()));
+
+        if hex::encode(secret.as_slice()) == request_secret {
+            Outcome::Success(MatchingSecret)
+        } else {
+            Outcome::Failure((Status::Unauthorized, "Invalid signature"))
+        }
+    }
+}
+
+#[rocket::post("/blog/refresh")]
+pub async fn refresh_pages(config: &State<WrappedConfig>, _auth: MatchingSecret) {
+    rocket::tokio::task::spawn_blocking(move || {
+        Command::new("git")
+            .arg("pull")
+            .status()
+            .expect("updating failed")
+    })
+    .await
+    .unwrap();
+
+    let _ = config.write().await.try_update();
 }
