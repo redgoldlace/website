@@ -1,5 +1,3 @@
-#![feature(try_blocks)]
-
 use hmac::Hmac;
 use lazy_static::lazy_static;
 use page::Config;
