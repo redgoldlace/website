@@ -211,6 +211,8 @@ impl Config {
             }
         }
 
+        pages.sort_by(|_, a, _, b| b.published.cmp(&a.published));
+
         Ok(Self::new(pages))
     }
 
