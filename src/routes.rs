@@ -4,7 +4,13 @@ use crate::{
     WrappedConfig, SECRET,
 };
 use hmac::{Hmac, Mac, NewMac};
-use rocket::{http::Status, outcome::Outcome, request::FromRequest, Request, State};
+use rocket::{
+    http::Status,
+    outcome::Outcome,
+    request::FromRequest,
+    serde::{json::Json, Deserialize, Serialize},
+    Request, State,
+};
 use sha2::Sha256;
 use std::{path::PathBuf, process::Command};
 
@@ -111,16 +117,29 @@ impl<'r> FromRequest<'r> for MatchingSecret {
     }
 }
 
-#[rocket::post("/blog/refresh")]
-pub async fn refresh_pages(config: &State<WrappedConfig>, _auth: MatchingSecret) {
-    rocket::tokio::task::spawn_blocking(move || {
-        Command::new("git")
-            .arg("pull")
-            .status()
-            .expect("updating failed")
-    })
-    .await
-    .unwrap();
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
+pub struct GithubWebhookBody {
+    action: String,
+    // We don't care about anything else for the moment
+}
 
-    let _ = config.write().await.try_update();
+#[rocket::post("/githook", data = "<json>")]
+pub async fn githook(
+    config: &State<WrappedConfig>,
+    json: Json<GithubWebhookBody>,
+    _auth: MatchingSecret,
+) {
+    if json.action == "push" {
+        rocket::tokio::task::spawn_blocking(move || {
+            Command::new("git")
+                .arg("pull")
+                .status()
+                .expect("updating failed")
+        })
+        .await
+        .unwrap();
+
+        let _ = config.write().await.try_update();
+    }
 }

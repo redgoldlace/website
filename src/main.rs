@@ -33,7 +33,7 @@ async fn launch() -> _ {
                 routes::about_me,
                 routes::post,
                 routes::post_list,
-                routes::refresh_pages,
+                routes::githook,
             ],
         )
         .mount("/", FileServer::from("static/"))
