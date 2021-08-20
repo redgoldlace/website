@@ -5,15 +5,11 @@ use crate::{
 };
 use hmac::{Hmac, Mac, NewMac};
 use rocket::{
-    data::ToByteUnit,
-    http::Status,
-    outcome::IntoOutcome,
-    request::FromRequest,
-    serde::{Deserialize, Serialize},
-    Data, Request, State,
+    data::ToByteUnit, http::Status, outcome::IntoOutcome, request::FromRequest, Data, Request,
+    State,
 };
 use sha2::Sha256;
-use std::{path::PathBuf, process::Command, str::from_utf8};
+use std::{path::PathBuf, process::Command};
 
 #[rocket::catch(default)]
 pub fn default_catcher(status: Status, _: &Request) -> Page {
@@ -111,13 +107,6 @@ impl<'r> FromRequest<'r> for Secret<'r> {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "rocket::serde")]
-pub struct GithubWebhook {
-    action: Option<String>,
-    // We don't care about anything else for the moment
-}
-
 #[rocket::post("/githook", data = "<data>")]
 pub async fn githook(
     config: &State<WrappedConfig>,
@@ -130,7 +119,6 @@ pub async fn githook(
         .await
         .unwrap();
 
-    let json: GithubWebhook = serde_json::from_str(from_utf8(&body).unwrap()).unwrap();
     let mut hmac = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes())
         .expect("HMAC supports keys of any size. This shouldn't happen");
 
@@ -141,18 +129,16 @@ pub async fn githook(
         return Err((Status::Unauthorized, "Invalid signature"));
     }
 
-    if json.action.as_deref().unwrap_or("") == "push" {
-        rocket::tokio::task::spawn_blocking(move || {
-            Command::new("git")
-                .arg("pull")
-                .status()
-                .expect("updating failed")
-        })
-        .await
-        .unwrap();
+    rocket::tokio::task::spawn_blocking(move || {
+        Command::new("git")
+            .arg("pull")
+            .status()
+            .expect("updating failed")
+    })
+    .await
+    .unwrap();
 
-        let _ = config.write().await.try_update();
-    }
+    let _ = config.write().await.try_update();
 
     Ok(())
 }
