@@ -5,14 +5,15 @@ use crate::{
 };
 use hmac::{Hmac, Mac, NewMac};
 use rocket::{
+    data::ToByteUnit,
     http::Status,
-    outcome::Outcome,
+    outcome::IntoOutcome,
     request::FromRequest,
-    serde::{json::Json, Deserialize, Serialize},
-    Request, State,
+    serde::{Deserialize, Serialize},
+    Data, Request, State,
 };
 use sha2::Sha256;
-use std::{path::PathBuf, process::Command};
+use std::{path::PathBuf, process::Command, str::from_utf8};
 
 #[rocket::catch(default)]
 pub fn default_catcher(status: Status, _: &Request) -> Page {
@@ -88,49 +89,61 @@ pub async fn post(config: &State<WrappedConfig>, slug: PathBuf) -> Option<Page> 
     Some(result)
 }
 
-pub struct MatchingSecret;
+pub struct Secret<'r>(&'r str);
+
+impl<'r> Secret<'r> {
+    fn value(&self) -> &str {
+        self.0
+    }
+}
 
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for MatchingSecret {
+impl<'r> FromRequest<'r> for Secret<'r> {
     type Error = &'static str;
 
     async fn from_request(request: &'r Request<'_>) -> rocket::request::Outcome<Self, Self::Error> {
-        let request_secret = request
+        request
             .headers()
             .get_one("X-Hub-Signature-256")
-            .and_then(|signature| signature.trim().strip_prefix("sha256="))
-            .unwrap_or("")
-            .trim();
-
-        let secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes())
-            .unwrap()
-            .finalize()
-            .into_bytes();
-
-        println!("{} vs {}", request_secret, hex::encode(secret.as_slice()));
-
-        if hex::encode(secret.as_slice()) == request_secret {
-            Outcome::Success(MatchingSecret)
-        } else {
-            Outcome::Failure((Status::Unauthorized, "Invalid signature"))
-        }
+            .map(str::trim)
+            .into_outcome((Status::Unauthorized, "Missing signature"))
+            .map(Secret)
     }
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-pub struct GithubWebhookBody {
-    action: String,
+pub struct GithubWebhook {
+    action: Option<String>,
     // We don't care about anything else for the moment
 }
 
-#[rocket::post("/githook", data = "<json>")]
+#[rocket::post("/githook", data = "<data>")]
 pub async fn githook(
     config: &State<WrappedConfig>,
-    json: Json<GithubWebhookBody>,
-    _auth: MatchingSecret,
-) {
-    if json.action == "push" {
+    data: Data<'_>,
+    request_secret: Secret<'_>,
+) -> Result<(), (Status, &'static str)> {
+    let mut body = Vec::new();
+    data.open(25.megabytes())
+        .stream_to(&mut body)
+        .await
+        .unwrap();
+
+    let json: GithubWebhook = serde_json::from_str(from_utf8(&body).unwrap()).unwrap();
+    let mut hmac = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes())
+        .expect("HMAC supports keys of any size. This shouldn't happen");
+
+    hmac.update(body.as_ref());
+    let secret = format!("sha256={}", hex::encode(hmac.finalize().into_bytes()));
+
+    println!("{} vs {}", secret, request_secret.value());
+
+    if secret != request_secret.value() {
+        return Err((Status::Unauthorized, "Invalid signature"));
+    }
+
+    if json.action.as_deref().unwrap_or("") == "push" {
         rocket::tokio::task::spawn_blocking(move || {
             Command::new("git")
                 .arg("pull")
@@ -142,4 +155,6 @@ pub async fn githook(
 
         let _ = config.write().await.try_update();
     }
+
+    Ok(())
 }
