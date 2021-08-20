@@ -137,8 +137,6 @@ pub async fn githook(
     hmac.update(body.as_ref());
     let secret = format!("sha256={}", hex::encode(hmac.finalize().into_bytes()));
 
-    println!("{} vs {}", secret, request_secret.value());
-
     if secret != request_secret.value() {
         return Err((Status::Unauthorized, "Invalid signature"));
     }
