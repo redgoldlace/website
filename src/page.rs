@@ -217,10 +217,7 @@ impl Config {
     }
 
     pub async fn try_update(&mut self) -> Result<(), Error> {
-        // This is incredibly fucking evil.
-        let mut result = Config::try_new().await?;
-        mem::swap(self, &mut result);
-
+        *self = Config::try_new().await?;
         Ok(())
     }
 }
