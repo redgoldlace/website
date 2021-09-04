@@ -13,7 +13,7 @@ use rocket::{
 };
 use rocket_dyn_templates::Template;
 use serde_json::Value;
-use std::{fmt::Display, io::Error as IoError, mem, path::Path};
+use std::{fmt::Display, io::Error as IoError, path::Path};
 use toml::{self, de::Error as TomlDeError};
 
 #[macro_export]

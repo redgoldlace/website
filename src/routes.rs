@@ -21,12 +21,14 @@ pub fn default_catcher(status: Status, _: &Request) -> Page {
     )
 }
 
-async fn render_simple(title: &str, path: &str) -> Option<Page> {
+async fn render_simple(title: &str, path: &str, description: &str) -> Option<Page> {
     let result = Page::new(
         PageKind::Simple,
         context! {
             "title" => title,
-            "content" => Page::render_markdown(path).await.ok()?
+            "content" => Page::render_markdown(path).await.ok()?,
+            "og_title" => title,
+            "og_description" => description,
         },
     );
 
@@ -35,12 +37,22 @@ async fn render_simple(title: &str, path: &str) -> Option<Page> {
 
 #[rocket::get("/")]
 pub async fn home() -> Option<Page> {
-    render_simple("Home", "pages/home.md").await
+    render_simple(
+        "Home",
+        "pages/home.md",
+        "It's the home page. I'm not sure what else to tell you?",
+    )
+    .await
 }
 
 #[rocket::get("/about")]
 pub async fn about_me() -> Option<Page> {
-    render_simple("About me", "pages/about.md").await
+    render_simple(
+        "About me",
+        "pages/about.md",
+        "Information about a certain someone",
+    )
+    .await
 }
 
 #[rocket::get("/blog")]
@@ -76,7 +88,9 @@ pub async fn post(config: &State<WrappedConfig>, slug: PathBuf) -> Option<Page> 
     let result = Page::new(
         PageKind::Post,
         context! {
-            "title" => info.title.to_owned(),
+            "title" => info.title.as_str(),
+            "og_title" => info.title.as_str(),
+            "og_description" => "A post from Kaylynn's blog",
             "published" => info.published.to_rfc3339(),
             "content" => Page::render_markdown(path).await.ok()?,
         },
