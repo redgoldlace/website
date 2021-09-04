@@ -7,10 +7,10 @@
   <meta name="author" content="Kaylynn" />
   <meta property="og:site_name" content="Kaylynn's blog">
   {% if og_title %}
-  <meta property="og:title" content={{ og_title }}>
+  <meta property="og:title" content="{{ og_title }}">
   {% endif %}
   {% if og_description %}
-  <meta property="og:description" content={{ og_description }}>
+  <meta property="og:description" content="{{ og_description }}">
   {% endif %}
   <link rel="stylesheet" href="/style.css" />
   <link rel="shortcut icon" type="image/png" href="favicon.png" />
