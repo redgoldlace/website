@@ -1,6 +1,7 @@
+use super::SYNTAX_SET;
 use chrono::{DateTime, Local, TimeZone};
 use comrak::{
-    nodes::{AstNode, NodeValue},
+    nodes::{AstNode, NodeHtmlBlock, NodeValue},
     Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
 };
 use indexmap::IndexMap;
@@ -13,7 +14,11 @@ use rocket::{
 };
 use rocket_dyn_templates::Template;
 use serde_json::Value;
-use std::{fmt::Display, io::Error as IoError, path::Path};
+use std::{fmt::Display, io::Error as IoError, path::Path, str::from_utf8, string::FromUtf8Error};
+use syntect::{
+    html::{ClassStyle, ClassedHTMLGenerator},
+    util::LinesWithEndings,
+};
 use toml::{self, de::Error as TomlDeError};
 
 #[macro_export]
@@ -50,6 +55,7 @@ lazy_static! {
 pub enum Error {
     Io(IoError),
     Invalid(TomlDeError),
+    Encoding(FromUtf8Error),
 }
 
 impl Display for Error {
@@ -57,6 +63,7 @@ impl Display for Error {
         match self {
             Error::Io(error) => write!(formatter, "IO error: {}", error),
             Error::Invalid(error) => write!(formatter, "TOML error: {}", error),
+            Error::Encoding(error) => write!(formatter, "UTF-8 conversion error: {}", error),
         }
     }
 }
@@ -72,6 +79,12 @@ impl From<IoError> for Error {
 impl From<TomlDeError> for Error {
     fn from(error: TomlDeError) -> Self {
         Error::Invalid(error)
+    }
+}
+
+impl From<FromUtf8Error> for Error {
+    fn from(error: FromUtf8Error) -> Self {
+        Error::Encoding(error)
     }
 }
 
@@ -133,7 +146,7 @@ where
 
 type R = Result<(), ()>;
 
-fn iter_nodes<'a>(node: &'a AstNode<'a>, mut f: impl FnMut(&'a AstNode<'a>) -> R) -> R {
+fn iter_nodes<'a>(node: &'a AstNode<'a>, mut f: impl FnMut(&'a AstNode<'a>) -> R) -> bool {
     fn _iter_nodes<'a>(node: &'a AstNode<'a>, f: &mut impl FnMut(&'a AstNode<'a>) -> R) -> R {
         f(node)?;
         for c in node.children() {
@@ -143,7 +156,50 @@ fn iter_nodes<'a>(node: &'a AstNode<'a>, mut f: impl FnMut(&'a AstNode<'a>) -> R
         Ok(())
     }
 
-    _iter_nodes(node, &mut f)
+    _iter_nodes(node, &mut f).is_err()
+}
+
+fn highlight<'a>(root: &'a AstNode<'a>) {
+    iter_nodes(root, |node| {
+        let mut data = node.data.borrow_mut();
+
+        match data.value {
+            NodeValue::CodeBlock(ref codeblock) => {
+                // SAFETY: I solemnly swear I will never include invalid UTF-8 inside of my website.
+                let language = from_utf8(&codeblock.info).unwrap();
+                let code = from_utf8(&codeblock.literal).unwrap();
+
+                let syntax_reference = SYNTAX_SET
+                    .find_syntax_by_extension(language)
+                    .or_else(|| SYNTAX_SET.find_syntax_by_name(language));
+
+                let syntax_reference = match syntax_reference {
+                    Some(reference) => reference,
+                    None => return Ok(()),
+                };
+
+                let mut html_generator = ClassedHTMLGenerator::new_with_class_style(
+                    &syntax_reference,
+                    &SYNTAX_SET,
+                    ClassStyle::SpacedPrefixed { prefix: "hl-" },
+                );
+
+                for line in LinesWithEndings::from(code) {
+                    html_generator.parse_html_for_line_which_includes_newline(line)
+                }
+
+                // What follows may be considered a crime
+                let mut new_node = NodeHtmlBlock::default();
+                let rendered = html_generator.finalize();
+                new_node.literal = format!("<pre><code>{}</code></pre>\n", rendered).into_bytes();
+
+                data.value = NodeValue::HtmlBlock(new_node);
+
+                Ok(())
+            }
+            _ => Ok(()),
+        }
+    });
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -153,14 +209,46 @@ pub struct PostInfo {
     #[serde(deserialize_with = "deserialize_config_date")]
     pub published: DateTime<Local>,
     #[serde(skip_deserializing)]
-    pub content: String,
+    pub rendered: String,
 }
 
-pub struct Config {
+impl PostInfo {
+    async fn build(content: String) -> Result<PostInfo, Error> {
+        let arena = Arena::new();
+        let root = comrak::parse_document(&arena, &content, &OPTIONS);
+
+        let mut front_matter = None;
+
+        iter_nodes(root, |node| match node.data.borrow().value {
+            NodeValue::FrontMatter(ref bytes) => {
+                front_matter.replace(String::from_utf8_lossy(bytes).into_owned());
+                Err(())
+            }
+            _ => Ok(()),
+        });
+
+        highlight(root);
+
+        let mut buffer = Vec::new();
+        comrak::format_html(root, &OPTIONS, &mut buffer)?;
+        let rendered = String::from_utf8(buffer)?;
+
+        toml::from_str::<PostInfo>(
+            front_matter
+                .unwrap_or_else(String::new)
+                .trim()
+                .trim_matches('-'),
+        )
+        .map(|page| PostInfo { rendered, ..page })
+        .map_err(Into::into)
+    }
+}
+
+pub struct PostMap {
     pub pages: IndexMap<String, PostInfo>,
 }
 
-impl Config {
+impl PostMap {
     pub fn new(pages: IndexMap<String, PostInfo>) -> Self {
         Self { pages }
     }
@@ -177,37 +265,16 @@ impl Config {
                     filename.to_string_lossy().into_owned()
                 });
 
-            let page_content = read_to_string(entry.path()).await?;
-            let arena = Arena::new();
-            let root = comrak::parse_document(&arena, &page_content, &OPTIONS);
+            let content = read_to_string(entry.path()).await?;
 
-            let mut front_matter = None;
-
-            let _ = iter_nodes(root, |node| match &node.data.borrow().value {
-                NodeValue::FrontMatter(bytes) => {
-                    front_matter.replace(String::from_utf8_lossy(bytes).into_owned());
-                    Err(())
-                }
-                _ => Ok(()),
-            });
-
-            let page = toml::from_str::<PostInfo>(
-                front_matter
-                    .unwrap_or_else(String::new)
-                    .trim()
-                    .trim_start_matches("---")
-                    .trim_end_matches("---"),
-            )
-            .map(|page| PostInfo {
-                content: page_content,
-                ..page
-            });
-
-            match page {
+            match PostInfo::build(content).await {
                 Ok(page) => {
                     pages.insert(filename, page);
                 }
-                Err(error) => eprintln!("Error while opening post at {}: {}", filename, error),
+                Err(error) => eprintln!(
+                    "Error while opening and rendering post at {}: {}",
+                    filename, error
+                ),
             }
         }
 
@@ -217,7 +284,7 @@ impl Config {
     }
 
     pub async fn try_update(&mut self) -> Result<(), Error> {
-        *self = Config::try_new().await?;
+        *self = PostMap::try_new().await?;
         Ok(())
     }
 }

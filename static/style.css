@@ -1,10 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap");
-
 /* My color names are perfect. */
 
 :root {
-  --fainter: #787891;
-  --faint: #5C5C70;
+  --parchment: #B0B0BF;
+  --faint: #787891;
   --greyish: #2e2e38;
   --blackish: #1c1c22;
   --sakura: #FCC5D3;
@@ -13,6 +12,8 @@
   --hot-pink: #f32b5a;
   --sky: #67aaf9;
   --emerald: #62c370;
+  --banana: #F5DD90;
+  --tangerine: #EC7D10;
   --plain: #f6f4f3;
 }
 
@@ -27,7 +28,9 @@ body {
 }
 
 /* This is an attempt at fixing an absolutely vexing display inconsistency on firefox mobile */
-html, body {
+
+html,
+body {
   text-size-adjust: none;
   -webkit-text-size-adjust: none;
   -moz-text-size-adjust: none;
@@ -129,8 +132,9 @@ thead {
   color: var(--hot-pink);
 }
 
-td, th {
-  border: 1px solid var(--fainter);
+td,
+th {
+  border: 1px solid var(--parchment);
   padding: 0.5rem 0.5rem;
 }
 
@@ -224,7 +228,10 @@ img {
 }
 
 .navbar-rest {
-  background-image: repeating-linear-gradient(to right, var(--hot-pink), var(--hot-pink) 0.5rem, var(--blackish) 0.5rem, var(--blackish) 1rem);
+  background-image: repeating-linear-gradient(to right,
+var(--hot-pink), var(--hot-pink) 0.5rem,
+var(--blackish) 0.5rem,
+var(--blackish) 1rem);
   display: inline-flex;
   align-self: stretch;
   background-color: var(--hot-pink);
@@ -252,86 +259,76 @@ img {
 /* This is a callout. */
 
 .unimportant {
-  color: var(--fainter);
+  color: var(--parchment);
   margin-top: 0;
 }
 
-/* Now comes HL.js hell. */
+/* The following is simply theming for highlighting */
 
-.hljs {
-  background: var(--greyish);
-  color: var(--plain);
-  display: block;
+.hl-comment {
+  color: var(--parchment);
 }
 
-.hljs-doctag, .hljs-meta-keyword, .hljs-name, .hljs-strong {
-  font-weight: bold;
+.hl-constant {
+  color: var(--lavender);
 }
 
-.hljs-code, .hljs-emphasis {
-  font-style: italic;
-}
-
-.hljs-section, .hljs-tag {
-  color: var(--sky);
-}
-
-.hljs-selector-class, .hljs-selector-id, .hljs-template-variable, .hljs-variable {
-  color: var(--sky);
-}
-
-.hljs-meta-string, .hljs-string {
-  color: var(--warm-pink);
-}
-
-.hljs-attr, .hljs-quote, .hljs-selector-attr {
-  color: var(--emerald);
-}
-
-.hljs-tag .hljs-attr {
-  color: inherit;
-}
-
-.hljs-attribute, .hljs-title {
+.hl-constant.hl-numeric,
+.hl-string {
   color: var(--sakura);
 }
 
-.hljs-built_in, .hljs-literal, .hljs-number, .hljs-symbol, .hljs-type {
-  color: var(--warmer-pink);
+.hl-keyword.hl-control,
+.hl-entity.hl-name.hl-function,
+.hl-support.hl-macro,
+.hl-entity.hl-name,
+.hl-support.hl-type,
+.hl-storage.hl-type.hl-source,
+.hl-meta.hl-generic,
+.hl-meta.hl-path,
+.hl-meta.hl-function.hl-parameters,
+.hl-return-type,
+.hl-constant.hl-other.hl-placeholder {
+  color: var(--hot-pink)
 }
 
-.hljs-bullet, .hljs-template-tag {
-  color: var(--plain);
-}
-
-.hljs-keyword, .hljs-selector-tag {
-  color: var(--fainter);
-}
-
-.hljs-code, .hljs-comment, .hljs-formula {
+.hl-storage.hl-modifier,
+.hl-keyword.hl-operator,
+.hl-punctuation.hl-accessor,
+.hl-storage.hl-type.hl-function,
+.hl-keyword.hl-control.hl-rust.hl-async,
+.hl-keyword.hl-other,
+.hl-storage.hl-type,
+.hl-entity.hl-name.hl-constant {
   color: var(--faint);
 }
 
-.hljs-link, .hljs-selector-pseudo, .hljs-regexp {
-  color: var(--warm-pink);
+.hl-parameter.hl-variable,
+.hl-variable.hl-function,
+.hl-entity.hl-other,
+.hl-constant.hl-other,
+.hl-source {
+  color: var(--sky);
 }
 
-.hljs-meta {
-  color: var(--hot-pink);
+.hl-punctuation.hl-group,
+.hl-punctuation.hl-block,
+.hl-meta.hl-annotation,
+.hl-punctuation.hl-separator,
+.hl-punctuation.hl-terminator,
+.hl-punctuation.hl-definition.hl-table,
+.hl-punctuation.hl-definition.hl-array,
+.hl-punctuation.hl-definition.hl-inline-table,
+.hl-punctuation.hl-definition.hl-key-value,
+.hl-entity.hl-table,
+.hl-meta.hl-annotation > .hl-meta.hl-path,
+.hl-meta.hl-annotation > .hl-meta > .hl-keyword,
+.hl-meta.hl-generic > .hl-punctuation,
+.hl-meta.hl-function > .hl-punctuation,
+.hl-meta.hl-function > .hl-punctuation.hl-comma {
+  color: var(--plain)
 }
 
-.hljs-deletion {
-  color: var(--hot-pink);
-}
-
-.hljs-addition {
+.hl-constant {
   color: var(--emerald);
-}
-
-.hljs-operator, .hljs-params, .hljs-property, .hljs-punctuation {
-  color: var(--plain);
-}
-
-.hljs-subst {
-  color: var(--plain);
 }

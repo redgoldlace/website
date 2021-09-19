@@ -1,7 +1,7 @@
 use crate::{
     context,
     page::{Page, PageKind},
-    WrappedConfig, SECRET,
+    WrappedPostMap, SECRET,
 };
 use hmac::{Hmac, Mac, NewMac};
 use rocket::{
@@ -9,7 +9,7 @@ use rocket::{
     State,
 };
 use sha2::Sha256;
-use std::{path::PathBuf, process::Command};
+use std::process::Command;
 
 #[rocket::catch(default)]
 pub fn default_catcher(status: Status, _: &Request) -> Page {
@@ -56,7 +56,7 @@ pub async fn about_me() -> Option<Page> {
 }
 
 #[rocket::get("/blog")]
-pub async fn post_list(config: &State<WrappedConfig>) -> Page {
+pub async fn post_list(config: &State<WrappedPostMap>) -> Page {
     let posts: Vec<_> = config
         .read()
         .await
@@ -81,10 +81,9 @@ pub async fn post_list(config: &State<WrappedConfig>) -> Page {
 }
 
 #[rocket::get("/blog/post/<slug>")]
-pub async fn post(config: &State<WrappedConfig>, slug: PathBuf) -> Option<Page> {
+pub async fn post(config: &State<WrappedPostMap>, slug: String) -> Option<Page> {
     let config_entry = config.read().await;
-    let info = config_entry.pages.get(slug.to_str()?)?;
-    let path = PathBuf::from("blog-pages").join(slug).with_extension("md");
+    let info = config_entry.pages.get(&slug)?;
     let result = Page::new(
         PageKind::Post,
         context! {
@@ -92,7 +91,7 @@ pub async fn post(config: &State<WrappedConfig>, slug: PathBuf) -> Option<Page> 
             "og_title" => info.title.as_str(),
             "og_description" => "A post from Kaylynn's blog",
             "published" => info.published.to_rfc3339(),
-            "content" => Page::render_markdown(path).await.ok()?,
+            "content" => info.rendered.to_owned(),
         },
     );
 
@@ -123,7 +122,7 @@ impl<'r> FromRequest<'r> for Secret<'r> {
 
 #[rocket::post("/githook", data = "<data>")]
 pub async fn githook(
-    config: &State<WrappedConfig>,
+    config: &State<WrappedPostMap>,
     data: Data<'_>,
     request_secret: Secret<'_>,
 ) -> Result<(), (Status, &'static str)> {
