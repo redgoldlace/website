@@ -1,5 +1,5 @@
 # It's my website
-I'm not real sure what you're doing here but you're probably not too interested in this.
-This is MIT-licensed but I don't really *understand* why you would want to use this. It is mine.
+Hey there! This is the source code for <https://kaylynn.gay/>.
+It's comprised of a relatively simple backend that you might be interested in.
 
-Please just leave it alone. Thanks.
+Past that, this is MIT licensed! Do with it what you will, though I'm not too sure what you'd wanna do with it.
