@@ -1,0 +1,49 @@
+.maso {
+    animation: maso-move 4s ease-out infinite;
+
+    background-position: center;
+    background-image: url("mason.webp");
+    background-repeat: repeat;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.maso-text {
+    font-size: 20rem;
+    color: white;
+    text-shadow: black 0 0 30px;
+}
+
+.maso-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: 100%;
+    max-height: 100%;
+}
+
+@keyframes maso-move {
+    0%, 100% {
+        background-position: calc(50% - 20rem) calc(50% - 20rem);
+    }
+
+    25% {
+        background-position: calc(50% + 20rem) calc(50% - 20rem);
+    }
+
+    50% {
+        background-position: calc(50% + 20rem) calc(50% + 20rem);
+    }
+
+    75% {
+        background-position: calc(50% - 20rem) calc(50% + 20rem);
+    }
+}
