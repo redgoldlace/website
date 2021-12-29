@@ -48,7 +48,7 @@ contexts:
 
     - match: '\b(mod)\s+({{identifier}})\b'
       captures:
-        1: storage.type.module.rust
+        1: storage.type.declaration.module.rust
         2: entity.name.module.rust
       push:
         - meta_scope: meta.module.rust
@@ -65,20 +65,20 @@ contexts:
 
     - match: '\b(fn)\s+(?={{identifier}})'
       captures:
-        1: storage.type.function.rust
+        1: storage.type.declaration.function.rust
       push: fn-definition
 
     - match: '\bstruct\b'
-      scope: storage.type.struct.rust
+      scope: storage.type.declaration.struct.rust
       push: struct-identifier
 
     - match: '\bunion\b'
-      scope: storage.type.union.rust
+      scope: storage.type.declaration.union.rust
       push: union-identifier
 
     - match: '\b(type)\s+({{identifier}})\b'
       captures:
-        1: storage.type.type.rust
+        1: storage.type.declaration.type.rust
         2: entity.name.type.rust
       push:
       - match: '=(?!=)'
@@ -89,7 +89,7 @@ contexts:
 
     - match: '\b(trait)\s+({{identifier}})\b'
       captures:
-        1: storage.type.trait.rust
+        1: storage.type.declaration.trait.rust
         2: entity.name.trait.rust
       push:
         - meta_scope: meta.trait.rust
@@ -102,11 +102,11 @@ contexts:
         - include: statements-block
 
     - match: '\bimpl\b'
-      scope: storage.type.impl.rust
+      scope: storage.type.declaration.impl.rust
       push: impl-definition
 
     - match: '\benum\b'
-      scope: storage.type.enum.rust
+      scope: storage.type.declaration.enum.rust
       push: enum-identifier
 
     - include: raw-pointer
@@ -1520,28 +1520,28 @@ contexts:
     - include: bool
 
     - match: \b(let|const|static)\b
-      scope: storage.type.rust
+      scope: storage.type.declaration.rust
 
     - match: \bfn\b
-      scope: storage.type.function.rust
+      scope: storage.type.declaration.function.rust
 
     - match: \bmod\b
-      scope: storage.type.module.rust
+      scope: storage.type.declaration.module.rust
 
     - match: \bstruct\b
-      scope: storage.type.struct.rust
+      scope: storage.type.declaration.struct.rust
 
     - match: \bimpl\b
-      scope: storage.type.impl.rust
+      scope: storage.type.declaration.impl.rust
 
     - match: \benum\b
-      scope: storage.type.enum.rust
+      scope: storage.type.declaration.enum.rust
 
     - match: \btype\b
-      scope: storage.type.type.rust
+      scope: storage.type.declaration.type.rust
 
     - match: \btrait\b
-      scope: storage.type.trait.rust
+      scope: storage.type.declaration.trait.rust
 
     - match: \b(mut|pub|unsafe|move|ref)\b
       scope: storage.modifier.rust

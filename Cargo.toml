@@ -12,7 +12,7 @@ hmac = "0.11.0"
 rocket = { version = "0.5.0-rc.1", features = ["json"] }
 rocket_dyn_templates = { version = "0.1.0-rc.1", features = ["tera"] }
 sha2 = "0.9.5"
-syntect = "4.6.0"
+syntect = { git = "https://github.com/trishume/syntect" }
 toml = "0.5"
 lazy_static = "1.4.0"
 indexmap = { version = "1.6.2", features = ["serde-1"] }

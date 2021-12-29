@@ -283,22 +283,34 @@ var(--blackish) 1rem);
 .hl-support.hl-macro,
 .hl-entity.hl-name,
 .hl-support.hl-type,
-.hl-storage.hl-type.hl-source,
+.hl-storage.hl-type,
 .hl-meta.hl-generic,
-.hl-meta.hl-path,
+.hl-meta.hl-generic .hl-storage.hl-type.hl-rust,
+.hl-meta.hl-generic .hl-meta.hl-path.hl-rust,
 .hl-meta.hl-function.hl-parameters,
 .hl-return-type,
 .hl-constant.hl-other.hl-placeholder {
   color: var(--hot-pink)
 }
 
+/* What follows is an illegal set of overloads since CSS can't do what I want otherwise. */
+
+.hl-keyword.hl-other.hl-rust + .hl-meta.hl-path.hl-rust,
+.hl-keyword.hl-other.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust,
+.hl-keyword.hl-other.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust,
+.hl-keyword.hl-other.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust,
+.hl-keyword.hl-other.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust + .hl-meta.hl-path.hl-rust {
+  color: var(--hot-pink)
+}
+
 .hl-storage.hl-modifier,
 .hl-keyword.hl-operator,
 .hl-punctuation.hl-accessor,
+.hl-storage.hl-type.hl-impl,
 .hl-storage.hl-type.hl-function,
+.hl-storage.hl-type.hl-declaration,
 .hl-keyword.hl-control.hl-rust.hl-async,
 .hl-keyword.hl-other,
-.hl-storage.hl-type,
 .hl-entity.hl-name.hl-constant {
   color: var(--faint);
 }
