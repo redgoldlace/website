@@ -501,7 +501,7 @@ let us throw stability to the wind, and envision what an *ideal* range type migh
   range types into prospective `Range`, `RangeOpen` and `RangeFull` types, with `Range` taking the place of the current
   `Range` + `RangeInclusive` types, `RangeOpen` taking the place of `RangeFrom` + `RangeTo` + `RangeToInclusive`, and
   `RangeFull` remaining largely the same. There are issues with the logistics of such a change, though, so I'm not too
-  sold on yet, but it *is* something to keep in mind.
+  sold on it yet, but it *is* something to keep in mind.
 - An ideal range type has more than 2 methods. Specifically, it would be useful for methods like `intersection`,
   `union`, `is_subset`, and `is_superset` to be implemented if the range's component type was `Ord` or `PartialOrd`.
 
@@ -525,5 +525,5 @@ in this space.
 On a more personal note, this sprawling mess of a blog post is *done*. I've spent far too many hours writing this, and I
 just wanna go play games now. Thanks for sticking with me, and well - happy new year!
 
-Cheers,
+Cheers,  
 \- Kaylynn
