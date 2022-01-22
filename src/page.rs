@@ -361,7 +361,7 @@ impl PostMap {
 
 pub fn build_rss(pages: &IndexMap<String, PostInfo>) -> Channel {
     ChannelBuilder::default()
-        .title("Kaylynn's Blog")
+        .title("Kaylynn's blog")
         .link("https://kaylynn.gay/blog")
         .description("Computers, Rust, and other ramblings")
         .webmaster(Some("mkaylynn7@gmail.com (Kaylynn Morgan)".to_owned()))
@@ -387,8 +387,8 @@ pub fn build_rss(pages: &IndexMap<String, PostInfo>) -> Channel {
                         .title(Some(info.title.clone()))
                         .guid(Some(
                             GuidBuilder::default()
-                                .value(info.title.clone())
-                                .permalink(false)
+                                .value(format!("https://kaylynn.gay/blog/post/{slug}"))
+                                .permalink(true)
                                 .build(),
                         ))
                         .description(Some(info.description.clone()))

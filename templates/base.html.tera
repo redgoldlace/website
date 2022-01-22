@@ -5,7 +5,8 @@
   <title>{% block title %} Kaylynn {% endblock title %}</title>
   <meta charset="utf-8" />
   <meta name="author" content="Kaylynn" />
-  <meta property="og:site_name" content="Kaylynn's blog">
+  <meta property="og:site_name" content="Kaylynn's website">
+  <meta property="og:image" content="https://kaylynn.gay/favicon.png">
   {% if og_title %}
   <meta property="og:title" content="{{ og_title }}">
   {% endif %}
