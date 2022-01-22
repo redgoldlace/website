@@ -31,8 +31,8 @@ lazy_static! {
 async fn launch() -> _ {
     // This is bad but I'm tired. Essentially we want to have this built here so that we panic at startup if things go
     // wrong.
-    &*SECRET;
-    &*SYNTAX_SET;
+    let _ = &*SECRET;
+    let _ = &*SYNTAX_SET;
 
     rocket::build()
         .register("/", catchers![routes::default_catcher])
@@ -43,6 +43,7 @@ async fn launch() -> _ {
                 routes::about_me,
                 routes::post,
                 routes::post_list,
+                routes::rss_feed,
                 routes::githook,
             ],
         )

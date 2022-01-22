@@ -5,8 +5,8 @@ use crate::{
 };
 use hmac::{Hmac, Mac, NewMac};
 use rocket::{
-    data::ToByteUnit, http::Status, outcome::IntoOutcome, request::FromRequest, Data, Request,
-    State,
+    data::ToByteUnit, http::Status, outcome::IntoOutcome, request::FromRequest,
+    response::content::Xml, Data, Request, State,
 };
 use sha2::Sha256;
 use std::process::Command;
@@ -60,7 +60,6 @@ pub async fn post_list(config: &State<WrappedPostMap>) -> Page {
     let posts: Vec<_> = config
         .read()
         .await
-        .pages
         .iter()
         .map(|(slug, info)| {
             context! {
@@ -82,20 +81,32 @@ pub async fn post_list(config: &State<WrappedPostMap>) -> Page {
 
 #[rocket::get("/blog/post/<slug>")]
 pub async fn post(config: &State<WrappedPostMap>, slug: String) -> Option<Page> {
-    let config_entry = config.read().await;
-    let info = config_entry.pages.get(&slug)?;
+    let posts = config.read().await;
+    let info = posts.get(&slug)?;
     let result = Page::new(
         PageKind::Post,
         context! {
             "title" => info.title.as_str(),
             "og_title" => info.title.as_str(),
-            "og_description" => "A post from Kaylynn's blog",
+            "og_description" => info.description.as_str(),
             "published" => info.published.to_rfc3339(),
             "content" => info.rendered.to_owned(),
         },
     );
 
     Some(result)
+}
+
+#[rocket::get("/blog/feed.rss")]
+pub async fn rss_feed(config: &State<WrappedPostMap>) -> Xml<String> {
+    let posts = config.read().await;
+    let rss = posts.rss();
+    
+    // SAFETY: This shouldn't fail, as vectors will grow when required.
+    let buffer = rss.pretty_write_to(Vec::new(), b' ', 2).unwrap();
+
+    // SAFETY: The various inputs are already valid UTF-8, so realistically it should be impossible for this to fail.
+    Xml(String::from_utf8(buffer).unwrap())
 }
 
 pub struct Secret<'r>(&'r str);

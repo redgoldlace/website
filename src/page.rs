@@ -1,6 +1,7 @@
 use super::SYNTAX_SET;
 use chrono::{DateTime, Local, TimeZone};
 use comrak::{
+    arena_tree::NodeEdge,
     nodes::{AstNode, NodeHtmlBlock, NodeValue},
     Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
 };
@@ -13,6 +14,7 @@ use rocket::{
     Request,
 };
 use rocket_dyn_templates::Template;
+use rss::{Channel, ChannelBuilder, ImageBuilder, ItemBuilder};
 use serde_json::Value;
 use std::{fmt::Display, io::Error as IoError, path::Path, str::from_utf8, string::FromUtf8Error};
 use syntect::{
@@ -144,62 +146,114 @@ where
         .map_err(|_| de::Error::custom("failed to parse date"))
 }
 
-type R = Result<(), ()>;
-
-fn iter_nodes<'a>(node: &'a AstNode<'a>, mut f: impl FnMut(&'a AstNode<'a>) -> R) -> bool {
-    fn _iter_nodes<'a>(node: &'a AstNode<'a>, f: &mut impl FnMut(&'a AstNode<'a>) -> R) -> R {
-        f(node)?;
-        for c in node.children() {
-            _iter_nodes(c, f)?;
-        }
-
-        Ok(())
-    }
-
-    _iter_nodes(node, &mut f).is_err()
+fn traverse<'a>(root: &'a AstNode<'a>) -> impl Iterator<Item = &'a AstNode<'a>> {
+    root.traverse().filter_map(|edge| match edge {
+        NodeEdge::Start(node) => Some(node),
+        NodeEdge::End(_) => None,
+    })
 }
 
 fn highlight<'a>(root: &'a AstNode<'a>) {
-    iter_nodes(root, |node| {
+    for node in traverse(root) {
         let mut data = node.data.borrow_mut();
 
-        match data.value {
-            NodeValue::CodeBlock(ref codeblock) => {
-                // SAFETY: I solemnly swear I will never include invalid UTF-8 inside of my website.
-                let language = from_utf8(&codeblock.info).unwrap();
-                let code = from_utf8(&codeblock.literal).unwrap();
+        if let NodeValue::CodeBlock(ref codeblock) = data.value {
+            // SAFETY: I solemnly swear I will never include invalid UTF-8 inside of my website.
+            let language = from_utf8(&codeblock.info).unwrap();
+            let code = from_utf8(&codeblock.literal).unwrap();
 
-                let syntax_reference = SYNTAX_SET
-                    .find_syntax_by_extension(language)
-                    .or_else(|| SYNTAX_SET.find_syntax_by_name(language));
+            let syntax_reference = SYNTAX_SET
+                .find_syntax_by_extension(language)
+                .or_else(|| SYNTAX_SET.find_syntax_by_name(language));
 
-                let syntax_reference = match syntax_reference {
-                    Some(reference) => reference,
-                    None => return Ok(()),
-                };
+            let syntax_reference = match syntax_reference {
+                Some(reference) => reference,
+                None => continue,
+            };
 
-                let mut html_generator = ClassedHTMLGenerator::new_with_class_style(
-                    &syntax_reference,
-                    &SYNTAX_SET,
-                    ClassStyle::SpacedPrefixed { prefix: "hl-" },
-                );
+            let mut html_generator = ClassedHTMLGenerator::new_with_class_style(
+                syntax_reference,
+                &SYNTAX_SET,
+                ClassStyle::SpacedPrefixed { prefix: "hl-" },
+            );
 
-                for line in LinesWithEndings::from(code) {
-                    html_generator.parse_html_for_line_which_includes_newline(line)
-                }
-
-                // What follows may be considered a crime
-                let mut new_node = NodeHtmlBlock::default();
-                let rendered = html_generator.finalize();
-                new_node.literal = format!("<pre><code>{}</code></pre>\n", rendered).into_bytes();
-
-                data.value = NodeValue::HtmlBlock(new_node);
-
-                Ok(())
+            for line in LinesWithEndings::from(code) {
+                html_generator.parse_html_for_line_which_includes_newline(line)
             }
-            _ => Ok(()),
+
+            // What follows may be considered a crime
+            let mut new_node = NodeHtmlBlock::default();
+            let rendered = html_generator.finalize();
+            new_node.literal = format!("<pre><code>{}</code></pre>\n", rendered).into_bytes();
+
+            data.value = NodeValue::HtmlBlock(new_node);
         }
-    });
+    }
+}
+
+enum Fragment {
+    String(String),
+    Char(char),
+}
+
+impl From<char> for Fragment {
+    fn from(v: char) -> Self {
+        Self::Char(v)
+    }
+}
+
+impl From<String> for Fragment {
+    fn from(v: String) -> Self {
+        Self::String(v)
+    }
+}
+
+fn description<'a>(root: &'a AstNode<'a>) -> Option<String> {
+    const DESCRIPTION_LENGTH: usize = 200;
+
+    let first_paragraph = root
+        .children()
+        .find(|node| matches!(node.data.borrow().value, NodeValue::Paragraph))?
+        .children();
+
+    let mut buffer = String::new();
+
+    fn extend_buffer<'a>(buffer: &mut String, nodes: impl Iterator<Item = &'a AstNode<'a>>) {
+        for node in nodes {
+            match &node.data.borrow().value {
+                NodeValue::Text(bytes) => buffer.push_str(&String::from_utf8_lossy(bytes)),
+                NodeValue::SoftBreak => buffer.push(' '),
+                NodeValue::LineBreak => buffer.push('\n'),
+                NodeValue::Emph
+                | NodeValue::Strong
+                | NodeValue::Strikethrough
+                | NodeValue::Superscript => extend_buffer(buffer, node.children()),
+                _ => continue,
+            }
+        }
+    }
+
+    extend_buffer(&mut buffer, first_paragraph);
+
+    let (len, end) = buffer
+        .char_indices()
+        .zip(1..)
+        .map(|((index, char), len)| (len, index + char.len_utf8()))
+        .take(DESCRIPTION_LENGTH + 3)
+        .last()?;
+
+    if len > DESCRIPTION_LENGTH {
+        let offset = buffer[..end]
+            .chars()
+            .rev()
+            .take(3)
+            .map(char::len_utf8)
+            .sum::<usize>();
+
+        return Some(format!("{} [...]", &buffer[..end - offset].trim()));
+    }
+
+    Some(buffer[..end].to_owned())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -210,6 +264,10 @@ pub struct PostInfo {
     pub published: DateTime<Local>,
     #[serde(skip_deserializing)]
     pub rendered: String,
+    // Realistically this could be some self-referential slice but I'm not that much of a masochist. Nor am I a C
+    // programmer.
+    #[serde(skip_deserializing)]
+    pub description: String,
 }
 
 impl PostInfo {
@@ -217,40 +275,40 @@ impl PostInfo {
         let arena = Arena::new();
         let root = comrak::parse_document(&arena, &content, &OPTIONS);
 
-        let mut front_matter = None;
+        highlight(root);
 
-        iter_nodes(root, |node| match node.data.borrow().value {
-            NodeValue::FrontMatter(ref bytes) => {
-                front_matter.replace(String::from_utf8_lossy(bytes).into_owned());
-                Err(())
-            }
-            _ => Ok(()),
+        let front_matter = traverse(root).find_map(|node| match node.data.borrow().value {
+            NodeValue::FrontMatter(ref bytes) => Some(String::from_utf8_lossy(bytes).into_owned()),
+            _ => None,
         });
 
-        highlight(root);
+        let description =
+            description(root).unwrap_or_else(|| "No description provided.".to_owned());
 
         let mut buffer = Vec::new();
         comrak::format_html(root, &OPTIONS, &mut buffer)?;
         let rendered = String::from_utf8(buffer)?;
 
-        toml::from_str::<PostInfo>(
-            front_matter
-                .unwrap_or_else(String::new)
-                .trim()
-                .trim_matches('-'),
-        )
-        .map(|page| PostInfo { rendered, ..page })
-        .map_err(Into::into)
+        let info = toml::from_str(front_matter.unwrap_or_default().trim().trim_matches('-'))?;
+
+        Ok(PostInfo {
+            rendered,
+            description,
+            ..info
+        })
     }
 }
 
 pub struct PostMap {
-    pub pages: IndexMap<String, PostInfo>,
+    pages: IndexMap<String, PostInfo>,
+    rss: Channel,
 }
 
 impl PostMap {
     pub fn new(pages: IndexMap<String, PostInfo>) -> Self {
-        Self { pages }
+        let rss = build_rss(&pages);
+
+        Self { pages, rss }
     }
 
     pub async fn try_new() -> Result<Self, Error> {
@@ -284,7 +342,54 @@ impl PostMap {
     }
 
     pub async fn try_update(&mut self) -> Result<(), Error> {
-        *self = PostMap::try_new().await?;
+        std::mem::swap(self, &mut PostMap::try_new().await?);
         Ok(())
     }
+
+    pub fn get(&self, slug: &str) -> Option<&PostInfo> {
+        self.pages.get(slug)
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&str, &PostInfo)> {
+        self.pages.iter().map(|(slug, post)| (slug.as_str(), post))
+    }
+
+    pub fn rss(&self) -> &Channel {
+        &self.rss
+    }
+}
+
+pub fn build_rss(pages: &IndexMap<String, PostInfo>) -> Channel {
+    ChannelBuilder::default()
+        .title("Kaylynn's Blog")
+        .link("https://kaylynn.gay/blog")
+        .description("Computers, Rust, and other ramblings")
+        .webmaster(Some("mkaylynn7@gmail.com".to_owned()))
+        .managing_editor(Some("mkaylynn7@gmail.com".to_owned()))
+        .last_build_date(pages.first().map(|(_, info)| info.published.to_rfc2822()))
+        .pub_date(pages.last().map(|(_, info)| info.published.to_rfc2822()))
+        .copyright(Some("Copyright 2021-present, Kaylynn Morgan".to_owned()))
+        .image(Some(
+            ImageBuilder::default()
+                .url("https://kaylynn.gay/favicon.png")
+                .link("https://kaylynn.gay/blog")
+                .title("<3")
+                .description(Some("<3".to_owned()))
+                .build(),
+        ))
+        .items(
+            pages
+                .iter()
+                .map(|(slug, info)| {
+                    ItemBuilder::default()
+                        .author(Some("mkaylynn7@gmail.com".to_owned()))
+                        .link(Some(format!("https://kaylynn.gay/blog/post/{slug}")))
+                        .title(Some(info.title.clone()))
+                        .description(Some(info.description.clone()))
+                        .pub_date(Some(info.published.to_rfc2822()))
+                        .build()
+                })
+                .collect::<Vec<_>>(),
+        )
+        .build()
 }
