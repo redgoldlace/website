@@ -101,7 +101,7 @@ pub async fn post(config: &State<WrappedPostMap>, slug: String) -> Option<Page> 
 pub async fn rss_feed(config: &State<WrappedPostMap>) -> Xml<String> {
     let posts = config.read().await;
     let rss = posts.rss();
-    
+
     // SAFETY: This shouldn't fail, as vectors will grow when required.
     let buffer = rss.pretty_write_to(Vec::new(), b' ', 2).unwrap();
 

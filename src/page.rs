@@ -14,7 +14,7 @@ use rocket::{
     Request,
 };
 use rocket_dyn_templates::Template;
-use rss::{Channel, ChannelBuilder, ImageBuilder, ItemBuilder};
+use rss::{Channel, ChannelBuilder, GuidBuilder, ImageBuilder, ItemBuilder};
 use serde_json::Value;
 use std::{fmt::Display, io::Error as IoError, path::Path, str::from_utf8, string::FromUtf8Error};
 use syntect::{
@@ -364,8 +364,8 @@ pub fn build_rss(pages: &IndexMap<String, PostInfo>) -> Channel {
         .title("Kaylynn's Blog")
         .link("https://kaylynn.gay/blog")
         .description("Computers, Rust, and other ramblings")
-        .webmaster(Some("mkaylynn7@gmail.com".to_owned()))
-        .managing_editor(Some("mkaylynn7@gmail.com".to_owned()))
+        .webmaster(Some("mkaylynn7@gmail.com (Kaylynn Morgan)".to_owned()))
+        .managing_editor(Some("mkaylynn7@gmail.com (Kaylynn Morgan)".to_owned()))
         .last_build_date(pages.first().map(|(_, info)| info.published.to_rfc2822()))
         .pub_date(pages.last().map(|(_, info)| info.published.to_rfc2822()))
         .copyright(Some("Copyright 2021-present, Kaylynn Morgan".to_owned()))
@@ -373,7 +373,7 @@ pub fn build_rss(pages: &IndexMap<String, PostInfo>) -> Channel {
             ImageBuilder::default()
                 .url("https://kaylynn.gay/favicon.png")
                 .link("https://kaylynn.gay/blog")
-                .title("<3")
+                .title("Kaylynn's Blog")
                 .description(Some("<3".to_owned()))
                 .build(),
         ))
@@ -385,6 +385,12 @@ pub fn build_rss(pages: &IndexMap<String, PostInfo>) -> Channel {
                         .author(Some("mkaylynn7@gmail.com".to_owned()))
                         .link(Some(format!("https://kaylynn.gay/blog/post/{slug}")))
                         .title(Some(info.title.clone()))
+                        .guid(Some(
+                            GuidBuilder::default()
+                                .value(info.title.clone())
+                                .permalink(false)
+                                .build(),
+                        ))
                         .description(Some(info.description.clone()))
                         .pub_date(Some(info.published.to_rfc2822()))
                         .build()
