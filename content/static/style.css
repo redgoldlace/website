@@ -309,6 +309,10 @@ img {
   margin-top: 1rem;
 }
 
+.post-list .post-list-item:last-of-type {
+  border-bottom: none;
+}
+
 .post-list-item .post-header, .post-description .post-header {
   margin: 0 auto;
 }
