@@ -42,6 +42,7 @@ async fn launch() -> _ {
                 routes::post,
                 routes::post_list,
                 routes::rss_feed,
+                routes::deploy,
             ],
         )
         .mount("/", FileServer::from("static/"))
