@@ -15,8 +15,7 @@ pub type WrappedPostMap = RwLock<PostMap>;
 pub type WrappedSecret = Hmac<Sha256>;
 
 lazy_static! {
-    pub static ref SECRET: String = std::env::var("WEBHOOK_SECRET")
-        .expect("the WEBHOOK_SECRET environment variable is required");
+    pub static ref SECRET: Option<String> = std::env::var("WEBHOOK_SECRET").ok();
     pub static ref SYNTAX_SET: SyntaxSet = {
         let mut builder = SyntaxSetBuilder::new();
         builder
@@ -31,7 +30,6 @@ lazy_static! {
 async fn launch() -> _ {
     // This is bad but I'm tired. Essentially we want to have this built here so that we panic at startup if things go
     // wrong.
-    let _ = &*SECRET;
     let _ = &*SYNTAX_SET;
 
     rocket::build()
@@ -44,7 +42,6 @@ async fn launch() -> _ {
                 routes::post,
                 routes::post_list,
                 routes::rss_feed,
-                routes::githook,
             ],
         )
         .mount("/", FileServer::from("static/"))

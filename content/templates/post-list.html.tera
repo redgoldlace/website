@@ -1,0 +1,17 @@
+{% extends "base" %}
+{% import "macros" as macros %}
+{% block title -%} Blog {% endblock title %}
+{% block content %}
+  <p>
+    If you're interested, you can find an RSS feed for this blog <a href="https://kaylynn.gay/blog/feed.rss">here</a>.
+  </p>
+
+  <div class="post-list">
+    {% for post in posts %}
+      <div class="post-list-item">
+        <h1 class="post-header"><a href="/blog/post/{{ post.slug }}">{{ post.title }}</a></h1>
+        {{ macros::published_at(when=post.published) }}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock content %}

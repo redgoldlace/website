@@ -1,15 +1,18 @@
+use std::str::FromStr;
+
 use crate::{
     context,
     page::{Page, PageKind},
     WrappedPostMap, SECRET,
 };
+use hex::ToHex;
 use hmac::{Hmac, Mac, NewMac};
 use rocket::{
     data::ToByteUnit, http::Status, outcome::IntoOutcome, request::FromRequest,
-    response::content::Xml, Data, Request, State,
+    response::content::Xml, Data, Request, Shutdown, State,
 };
+use serde_json::Value;
 use sha2::Sha256;
-use std::process::Command;
 
 #[rocket::catch(default)]
 pub fn default_catcher(status: Status, _: &Request) -> Page {
@@ -109,6 +112,17 @@ pub async fn rss_feed(config: &State<WrappedPostMap>) -> Xml<String> {
     Xml(String::from_utf8(buffer).unwrap())
 }
 
+trait MacExt {
+    fn with_data(self, data: &[u8]) -> Self;
+}
+
+impl<M: Mac> MacExt for M {
+    fn with_data(mut self, data: &[u8]) -> Self {
+        self.update(data);
+        self
+    }
+}
+
 pub struct Secret<'r>(&'r str);
 
 impl<'r> Secret<'r> {
@@ -125,44 +139,54 @@ impl<'r> FromRequest<'r> for Secret<'r> {
         request
             .headers()
             .get_one("X-Hub-Signature-256")
-            .map(str::trim)
             .into_outcome((Status::Unauthorized, "Missing signature"))
-            .map(Secret)
+            .and_then(|secret| {
+                secret
+                    .trim()
+                    .strip_prefix("sha256=")
+                    .into_outcome((Status::BadRequest, "Invalid signature format"))
+                    .map(Secret)
+            })
     }
 }
 
-#[rocket::post("/githook", data = "<data>")]
-pub async fn githook(
-    config: &State<WrappedPostMap>,
+#[rocket::post("/deploy", data = "<data>")]
+pub async fn deploy(
+    shutdown: Shutdown,
     data: Data<'_>,
     request_secret: Secret<'_>,
 ) -> Result<(), (Status, &'static str)> {
     let mut body = Vec::new();
+
     data.open(25.megabytes())
         .stream_to(&mut body)
         .await
         .unwrap();
 
-    let mut hmac = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes())
-        .expect("HMAC supports keys of any size. This shouldn't happen");
+    let secret = SECRET
+        .as_deref()
+        .ok_or((Status::InternalServerError, "No secret configured"))?
+        .as_bytes();
 
-    hmac.update(body.as_ref());
-    let secret = format!("sha256={}", hex::encode(hmac.finalize().into_bytes()));
+    let sha = Hmac::<Sha256>::new_from_slice(secret)
+        .unwrap()
+        .with_data(body.as_ref())
+        .finalize()
+        .into_bytes()
+        .encode_hex::<String>();
 
-    if secret != request_secret.value() {
+    if sha != request_secret.value() {
         return Err((Status::Unauthorized, "Invalid signature"));
     }
 
-    rocket::tokio::task::spawn_blocking(move || {
-        Command::new("git")
-            .arg("pull")
-            .status()
-            .expect("updating failed")
-    })
-    .await
-    .unwrap();
+    let raw = String::from_utf8_lossy(body.as_ref());
+    let payload = Value::from_str(&raw).unwrap();
 
-    let _ = config.write().await.try_update();
+    if payload["action"] != "completed" {
+        return Ok(());
+    }
+
+    shutdown.notify();
 
     Ok(())
 }

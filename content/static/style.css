@@ -1,4 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Display:wght@700&display=swap');
+
 /* My color names are perfect. */
 
 :root {
@@ -23,7 +25,6 @@ body {
   display: flex;
   flex-direction: column;
   font-family: "JetBrains Mono", monospace;
-  font-weight: 400;
   margin: 0 auto;
 }
 
@@ -41,7 +42,6 @@ body {
 
 @media screen and (max-width: 1000px) {
   body {
-    font-size: 2.65rem;
     width: 87.5%;
   }
 }
@@ -58,11 +58,60 @@ body {
   }
 }
 
-h1, h2, h3, h4, h5, h6 {
+p {
+  /* Paragraphs need their own margins since the default ones look ugly */
+  margin: 0.5rem 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--hot-pink);
   font-weight: 700;
   /* Margins for headers look better consistent */
   margin: 1.5rem 0;
+  /* We need to keep the multiplier at 1 by default */
+  --heading-multiplier: 1;
+}
+
+@media screen and (max-width: 700px) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    /* On smaller displays we want to make headings a bit smaller */
+    --heading-multiplier: 0.75;
+  }
+}
+
+/* This is evil */
+h1 {
+  font-size: calc(2rem * var(--heading-multiplier));
+}
+
+h2 {
+  font-size: calc(1.5rem * var(--heading-multiplier));
+}
+
+h3 {
+  font-size: calc(1.17rem * var(--heading-multiplier));
+}
+
+h4 {
+  font-size: calc(1rem * var(--heading-multiplier));
+}
+
+h5 {
+  font-size: calc(0.83rem * var(--heading-multiplier));
+}
+
+h6 {
+  font-size: calc(0.75rem * var(--heading-multiplier));
 }
 
 a {
@@ -71,17 +120,21 @@ a {
 }
 
 a:hover {
+  color: var(--warmer-pink);
   text-decoration-color: var(--warmer-pink);
 }
 
-/* Inline code needs its own rounding and background. We also need to change the font. */
+a:active {
+  color: var(--hot-pink);
+  text-decoration-color: var(--hot-pink);
+}
+
+/* Inline code needs its own rounding and background. */
 
 code {
   background-color: var(--greyish);
   border-radius: 0.25rem;
   color: var(--sakura);
-  font-family: "JetBrains Mono", monospace;
-  font-weight: 400;
   padding: 0.1rem;
 }
 
@@ -100,11 +153,6 @@ pre code {
   color: var(--plain);
   padding: 0rem;
   max-width: 100%;
-}
-
-hr {
-  border: 1px solid var(--faint);
-  width: 100%;
 }
 
 blockquote {
@@ -170,7 +218,7 @@ img {
 
 /* This is dumb and hacky and bad. But I suck at CSS so.. it works? */
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 700px) {
   .image-row img {
     margin: 0.5rem;
   }
@@ -198,69 +246,80 @@ img {
 
 .navbar {
   display: flex;
-  margin: 1.5rem 0;
-  justify-content: left;
+  margin: 1.5rem 0 0.75rem;
+  justify-content: center;
+  align-self: center;
   align-items: center;
+  flex-wrap: wrap;
   flex-direction: row;
   width: 100%;
-}
-
-@media screen and (max-width: 1000px) {
-  .navbar {
-    flex-direction: column;
-    align-self: center;
-    align-items: stretch;
-    flex-grow: 1;
-  }
 }
 
 .navbar-logo {
   background-color: var(--hot-pink);
   color: var(--blackish);
   display: inline-block;
-  font-size: 3rem;
+  font-size: 2.5rem;
+  font-family: "Noto Sans Display", sans-serif;
+  font-weight: 700;
   margin: 0;
   padding: 0.5rem 1rem;
 }
 
 .navbar-content {
-  padding: 0 1rem;
+  text-align: center;
+  padding: 0.5rem 1rem;
 }
 
 .navbar-rest {
-  background-image: repeating-linear-gradient(to right,
-var(--hot-pink), var(--hot-pink) 0.5rem,
-var(--blackish) 0.5rem,
-var(--blackish) 1rem);
-  display: inline-flex;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--hot-pink), var(--hot-pink) 0.5rem,
+    var(--blackish) 0.5rem,
+    var(--blackish) 1rem
+  );
+  display: inline-block;
   align-self: stretch;
-  background-color: var(--hot-pink);
   flex-grow: 1;
 }
 
-@media screen and (max-width: 1000px) {
+/* Mobile-specific navbar styling */
+@media screen and (max-width: 700px) {
   .navbar-logo {
-    align-self: stretch;
+    flex-basis: 100%;
     text-align: center;
   }
+
   .navbar-content {
+    flex-basis: max-content;
+    flex-grow: 1;
     align-self: center;
-    margin: 0.5rem 0;
   }
+
   .navbar-rest {
-    display: none;
+    flex-basis: 100%;
+    height: 2rem;
   }
 }
 
-.post-header {
-  margin-bottom: 0;
+.post-list-item {
+  display: block;
+  padding-bottom: 1rem;
+  border-bottom: solid var(--greyish);
+  margin-top: 1rem;
 }
 
-/* This is a callout. */
+.post-list-item .post-header, .post-description .post-header {
+  margin: 0 auto;
+}
 
-.unimportant {
+.post-list-item .post-timestamp, .post-description .post-timestamp {
   color: var(--parchment);
-  margin-top: 0;
+  margin-top: 0.5rem;
+}
+
+.post-description .post-timestamp {
+  margin-bottom: 1rem;
 }
 
 /* The following is simply theming for highlighting */
