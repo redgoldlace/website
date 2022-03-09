@@ -304,7 +304,6 @@ img {
 
 .post-list-item {
   display: block;
-  padding-bottom: 1rem;
   border-bottom: solid var(--greyish);
   margin-top: 1rem;
 }
