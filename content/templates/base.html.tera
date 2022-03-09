@@ -39,7 +39,7 @@
   </body>
 
   <script type="text/javascript" src="/tinycolor.js" async></script>
-  <script>
+  <script type="text/javascript">
     function gay() {
       let sheet = document.styleSheets[0];
       let rules = Array.from(sheet.cssRules);
@@ -59,11 +59,11 @@
             .getPropertyValue(ruleName);
 
           // This probably isn't a color, so we don't want to touch it.
-          if (!ruleValue.startsWith("#")) {
+          if (!ruleValue.trim().startsWith("#")) {
             continue;
           }
 
-          let color = tinycolor(ruleValue).spin(1).toHexString();
+          let color = tinycolor(ruleValue.trim()).spin(1).toHexString();
           document.documentElement.style.setProperty(ruleName, color);
         }
       };
