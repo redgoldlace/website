@@ -363,7 +363,7 @@ pub fn build_rss(pages: &IndexMap<String, PostInfo>) -> Channel {
     ChannelBuilder::default()
         .title("Kaylynn's blog")
         .link("https://kaylynn.gay/blog")
-        .description("Computers, Rust, and other ramblings")
+        .description("Computers, cats, and eternal sleepiness")
         .webmaster(Some("mkaylynn7@gmail.com (Kaylynn Morgan)".to_owned()))
         .managing_editor(Some("mkaylynn7@gmail.com (Kaylynn Morgan)".to_owned()))
         .last_build_date(pages.first().map(|(_, info)| info.published.to_rfc2822()))

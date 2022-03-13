@@ -72,10 +72,23 @@ h6 {
   color: var(--hot-pink);
   font-weight: 700;
   /* Margins for headers look better consistent */
-  margin: 1.5rem 0;
+  margin: 1rem 0;
   /* We need to keep the multiplier at 1 by default */
   --heading-multiplier: 1;
 }
+
+/* We don't want to double up on margins for headings */
+
+.navbar + h1,
+.navbar + h2,
+.navbar + h3,
+.navbar + h4,
+.navbar + h5,
+.navbar + h6 {
+  margin-top: 0;
+}
+
+/* On smaller displays we want to make headings a bit smaller */
 
 @media screen and (max-width: 700px) {
   h1,
@@ -84,12 +97,12 @@ h6 {
   h4,
   h5,
   h6 {
-    /* On smaller displays we want to make headings a bit smaller */
     --heading-multiplier: 0.75;
   }
 }
 
 /* This is evil */
+
 h1 {
   font-size: calc(2rem * var(--heading-multiplier));
 }
@@ -136,6 +149,8 @@ code {
   border-radius: 0.25rem;
   color: var(--sakura);
   padding: 0.1rem;
+  /* For the sake of readability */
+  font-weight: 700;
 }
 
 pre {
@@ -196,43 +211,12 @@ img {
   width: 100%;
 }
 
-.image-row img {
-  margin: 0.5rem;
-}
-
-.image-row img:first-of-type {
-  margin-left: 0;
-}
-
-.image-row img:last-of-type {
-  margin-right: 0;
-}
-
-.image-row {
+.image-gallery {
   display: flex;
+  gap: 1rem 0.5rem;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  min-width: none;
-}
-
-/* This is dumb and hacky and bad. But I suck at CSS so.. it works? */
-
-@media screen and (max-width: 700px) {
-  .image-row img {
-    margin: 0.5rem;
-  }
-  .image-row {
-    flex-direction: column;
-  }
-  .image-row img:first-of-type {
-    margin-left: 0.5rem;
-    margin-top: 0;
-  }
-  .image-row img:last-of-type {
-    margin-right: 0.5rem;
-    margin-bottom: 0;
-  }
 }
 
 /* This is used on the error page. It's also kinda a meme. */
@@ -246,7 +230,7 @@ img {
 
 .navbar {
   display: flex;
-  margin: 1.5rem 0 0.75rem;
+  margin: 1.5rem 0;
   justify-content: center;
   align-self: center;
   align-items: center;
@@ -305,7 +289,18 @@ img {
 .post-list-item {
   display: block;
   border-bottom: solid var(--greyish);
-  margin-top: 1rem;
+  padding: 1rem 0;
+}
+
+.post-description {
+  display: block;
+}
+
+.post-description::after {
+  content: "";
+  display: block;
+  margin: 1rem 0;
+  border-bottom: solid var(--greyish);
 }
 
 .post-list .post-list-item:last-of-type {
@@ -316,13 +311,12 @@ img {
   margin: 0 auto;
 }
 
+/* We need to use an explicit `margin` attribute here, since otherwise the timestamp will inherit its margin from `h1`
+and co, which is undesirable */
+
 .post-list-item .post-timestamp, .post-description .post-timestamp {
   color: var(--parchment);
-  margin-top: 0.5rem;
-}
-
-.post-description .post-timestamp {
-  margin-bottom: 1rem;
+  margin: 0.25rem 0 0;
 }
 
 /* The following is simply theming for highlighting */

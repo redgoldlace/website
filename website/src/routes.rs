@@ -43,7 +43,7 @@ pub async fn home() -> Option<Page> {
     render_simple(
         "Home",
         "pages/home.md",
-        "It's the home page. I'm not sure what else to tell you?",
+        "Computers, cats, and eternal sleepiness",
     )
     .await
 }
@@ -53,7 +53,7 @@ pub async fn about_me() -> Option<Page> {
     render_simple(
         "About me",
         "pages/about.md",
-        "Information about a certain someone",
+        "It's me!",
     )
     .await
 }
@@ -182,6 +182,7 @@ pub async fn deploy(
     let raw = String::from_utf8_lossy(body.as_ref());
     let payload = Value::from_str(&raw).unwrap();
 
+    // We don't want to trigger a shutdown until the actions run is completed and a new image is present on Docker Hub
     if payload["action"] != "completed" {
         return Ok(());
     }
