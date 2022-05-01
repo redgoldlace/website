@@ -150,6 +150,7 @@ code {
   color: var(--sakura);
   padding: 0.1rem;
   /* For the sake of readability */
+  font-family: "JetBrains Mono", monospace;
   font-weight: 700;
 }
 
