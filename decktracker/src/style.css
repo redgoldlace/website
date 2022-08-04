@@ -1,0 +1,253 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&display=swap");
+
+:root {
+    --legendary: #F1C40F;
+    --epic: #C804A4;
+    --rare: #449DD1;
+    --common: #EBEBEB;
+
+    --color-fg: #353f4b;
+    --color-fg-light: #44505F;
+    --color-fg-lighter: #556477;
+
+    --color-bg: #242b33;
+    --color-solid: #171c21;
+
+    --color-danger: #e5513d;
+    --color-danger-light: #E96E5D;
+    --color-danger-lighter: #EB7E6F;
+
+    --color-ok: #2D7DD2;
+    --color-ok-light: #468CD8;
+    --color-ok-lighter: #68A1DF;
+
+    --base-opacity: 1;
+    --accent: var(--legendary);
+}
+
+.app {
+    display: flex;
+    justify-content: center;
+}
+
+body,
+html {
+    background: var(--color-bg);
+    padding: 0;
+    margin: 0;
+    font-family: "Noto Sans", sans-serif;
+}
+
+.rarity-legendary {
+    --rarity-color: var(--legendary);
+}
+
+.rarity-epic {
+    --rarity-color: var(--epic);
+}
+
+.rarity-rare {
+    --rarity-color: var(--rare);
+}
+
+.rarity-common {
+    --rarity-color: var(--common);
+}
+
+.button {
+    padding: 10px;
+    margin: 5px;
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+    font-size: 1.4rem;
+    background: var(--form-color);
+    outline: none;
+    border: none;
+    border-radius: 5px;
+}
+
+.button:hover {
+    background: var(--form-color-hover);
+}
+
+.button:active {
+    background: var(--form-color-active);
+}
+
+.label {
+    box-sizing: border-box;
+    display: flex;
+    flex-grow: 1;
+    padding: 2.5px;
+
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+    outline: none;
+    background: var(--color-bg);
+    border: 2px solid var(--color-fg-light);
+    border-radius: 5px;
+}
+
+.faded {
+    display: block;
+    margin: 0 10px;
+    color: var(--color-fg-light);
+}
+
+.textbox {
+    display: flex;
+    padding: 10px;
+    margin: 5px;
+
+    flex-grow: 1;
+    width: 60px;
+    align-items: center;
+    justify-content: stretch;
+    text-overflow: ellipsis;
+
+    background: var(--form-color);
+    border: 2px solid var(--color-fg-light);
+    border-radius: 5px;
+    color: white;
+    font-size: 1.4rem;
+    outline: none;
+}
+
+.invalid {
+    border: 2px solid var(--color-danger);
+    color: var(--color-danger);
+}
+
+.form-danger {
+    --form-color: var(--color-danger);
+    --form-color-hover: var(--color-danger-light);
+    --form-color-active: var(--color-danger-lighter);
+}
+
+.form-ok {
+    --form-color: var(--color-ok);
+    --form-color-hover: var(--color-ok-light);
+    --form-color-active: var(--color-ok-lighter);
+}
+
+.form-plain {
+    --form-color: var(--color-fg);
+    --form-color-hover: var(--color-fg-light);
+    --form-color-active: var(--color-fg-lighter);
+}
+
+.form {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+
+    width: 100%;
+    box-shadow: none;
+}
+
+.button-load-deck {
+    flex-basis: 60px;
+}
+
+.button-reset-deck {
+    flex-basis: 60px;
+}
+
+.deck-list {
+    display: flex;
+    flex-grow: 1;
+    max-width: 900px;
+    flex-direction: column;
+    margin: 0.25rem;
+    user-select: none;
+    background: none;
+}
+.stats-icon {
+    margin-right: 10px;
+}
+
+
+.stats-wrapper {
+    position: sticky;
+    top: -5px;
+    padding: 20px 10px;
+    z-index: 1;
+    background: var(--color-bg);
+}
+
+.slot-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-items: stretch;
+    /* flex-direction: column; */
+    margin: 10px;
+}
+
+.deck-slot {
+    display: flex;
+    width: 100%;
+    opacity: var(--base-opacity);
+
+    align-items: center;
+    justify-items: center;
+}
+
+@media screen and (min-width: 700px) {
+    .deck-slot {
+        max-width: 50%;
+    }
+}
+
+.deck-slot:hover {
+    filter: brightness(115%);
+}
+
+.section {
+    display: flex;
+    align-items: center;
+    height: 35px;
+    border: 1px solid var(--color-solid);
+    background: var(--color-fg);
+    color: white;
+    text-shadow: 
+        -1px -1px 1px black,
+        -1px  1px 1px black,
+         1px -1px 1px black,
+         1px  1px 1px black;
+}
+
+.mana-cost {
+    justify-content: center;
+    width: 41px;
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    background-color: var(--rarity-color);
+}
+
+.card-name {
+    position: relative;
+
+    top: 0;
+    bottom: auto;
+    left: 0;
+    right: auto;
+    flex-grow: 1;
+
+    padding: 0 10px;
+    background:
+        linear-gradient(to right, var(--color-fg) 0%, #353f4b calc(100% - 120px), rgba(0, 0, 0, 0) 100%),
+        center right/contain var(--tile-url);
+}
+
+.card-count {
+    justify-content: center;
+    width: 25px;
+    flex-shrink: 0;
+    color: var(--accent);
+    font-size: 1rem;
+}

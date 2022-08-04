@@ -8,3 +8,10 @@ target/
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# Build artifacts for JS/TS builds
+node_modules
+decktracker/dist
+
+# Vite cache (or something to that effect)
+.vite
