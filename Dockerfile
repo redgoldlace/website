@@ -17,6 +17,7 @@ FROM node:18 AS js_builder
 WORKDIR /website
 COPY decktracker/ .
 RUN yarn install
+RUN yarn build
 
 FROM debian:bullseye-slim AS runtime
 WORKDIR /website
