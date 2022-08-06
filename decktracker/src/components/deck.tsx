@@ -64,11 +64,7 @@ class SortStrategy {
     }
 }
 
-type Props = {
-    deckstring: string | undefined,
-}
-
-export default function Deck(props: Props) {
+export default function Deck() {
     let [inputDeckstring, setInputDeckstring] = useState(localStorage.getItem("lastDeck") || "");
     let [deckContents, setDeckContents] = useState(() => new DeckInfo(inputDeckstring));
     let [sortStrategy, setSortStrategy] = useState("manaCost" as SortStrategyName);
@@ -139,38 +135,40 @@ export default function Deck(props: Props) {
     let draw2 = Math.min(draw1 * 2, 100);
 
     return (
-        <div class="deck-list">
-            <form class="form">
-                <input
-                    type="text"
-                    class={textboxClasses}
-                    value={inputDeckstring}
-                    placeholder="Enter deck code..."
-                    onInput={onDeckInput}
-                />
-                <button class="button button-load-deck form-ok" onClick={onDeckLoad}>
-                    <i class="fa-solid fa-copy"></i>
-                </button>
-                <button class="button button-reset-deck form-danger" onClick={onDeckReload}>
-                    <i class="fa-solid fa-repeat"></i>
-                </button>
-            </form>
-            <div class="stats-wrapper">
-                <div class="label form form-plain">
-                    <i class="fa-solid fa-wand-magic-sparkles stats-icon"></i>
-                    <span>{spells}</span>
-                    <span class="faded">|</span>
-                    <i class="fa-solid fa-dragon stats-icon"></i>
-                    <span>{minions}</span>
-                    <span class="faded">|</span>
-                    <i class="fa-solid fa-dice stats-icon"></i>
-                    <span>{`${draw1.toFixed(1)}%`}</span>
-                    <span class="faded">/</span>
-                    <span>{`${draw2.toFixed(1)}%`}</span>
+        <div class="deck-container">
+            <div class="deck-list">
+                <form class="form">
+                    <input
+                        type="text"
+                        class={textboxClasses}
+                        value={inputDeckstring}
+                        placeholder="Enter deck code..."
+                        onInput={onDeckInput}
+                    />
+                    <button class="button button-load-deck form-ok" onClick={onDeckLoad}>
+                        load
+                    </button>
+                    <button class="button button-reset-deck form-danger" onClick={onDeckReload}>
+                        reset
+                    </button>
+                </form>
+                <div class="stats-wrapper">
+                    <div class="label form form-plain">
+                        <i class="fa-solid fa-wand-magic-sparkles stats-icon"></i>
+                        <span>{spells}</span>
+                        <span class="faded">|</span>
+                        <i class="fa-solid fa-dragon stats-icon"></i>
+                        <span>{minions}</span>
+                        <span class="faded">|</span>
+                        <i class="fa-solid fa-dice stats-icon"></i>
+                        <span>{`${draw1.toFixed(1)}%`}</span>
+                        <span class="faded">/</span>
+                        <span>{`${draw2.toFixed(1)}%`}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="slot-wrapper">
-                {Array.from(slots())}
+                <div class="slot-wrapper">
+                    {Array.from(slots())}
+                </div>
             </div>
         </div>
     );

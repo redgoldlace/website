@@ -25,17 +25,15 @@
     --accent: var(--legendary);
 }
 
-.app {
-    display: flex;
-    justify-content: center;
-}
-
 body,
 html {
-    background: var(--color-bg);
+    height: 100%;
+
     padding: 0;
     margin: 0;
+
     font-family: "Noto Sans", sans-serif;
+    background: var(--color-bg);
 }
 
 .rarity-legendary {
@@ -150,6 +148,41 @@ html {
     box-shadow: none;
 }
 
+.loading-container {
+    display: flex;
+
+    height: 100%;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.loading {
+    display: flex;
+
+    align-items: center;
+    flex-direction: column;
+
+    color: white;
+}
+
+.loading-icon {
+    margin: 1rem;
+
+    animation: rotation 1s linear infinite;
+    font-size: 4rem;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .button-load-deck {
     flex-basis: 60px;
 }
@@ -158,19 +191,28 @@ html {
     flex-basis: 60px;
 }
 
+.deck-container {
+    display: flex;
+
+    justify-content: center;
+}
+
 .deck-list {
     display: flex;
-    flex-grow: 1;
-    max-width: 900px;
+
     flex-direction: column;
+    flex-grow: 1;
+
+    max-width: 900px;
     margin: 0.25rem;
+
     user-select: none;
     background: none;
 }
+
 .stats-icon {
     margin-right: 10px;
 }
-
 
 .stats-wrapper {
     position: sticky;
@@ -194,7 +236,7 @@ html {
     opacity: var(--base-opacity);
 
     align-items: center;
-    justify-items: center;
+    justify-content: center;
 }
 
 @media screen and (min-width: 700px) {
@@ -210,7 +252,7 @@ html {
 .section {
     display: flex;
     align-items: center;
-    height: 35px;
+    height: 30px;
     border: 1px solid var(--color-solid);
     background: var(--color-fg);
     color: white;
@@ -240,8 +282,8 @@ html {
 
     padding: 0 10px;
     background:
-        linear-gradient(to right, var(--color-fg) 0%, #353f4b calc(100% - 120px), rgba(0, 0, 0, 0) 100%),
-        center right/contain var(--tile-url);
+        center left -1px/102% 100% linear-gradient(to right, var(--color-fg) 0%, var(--color-fg) calc(100% - 100px), rgba(0, 0, 0, 0) 100%),
+        center right -1px/contain var(--tile-url);
 }
 
 .card-count {
