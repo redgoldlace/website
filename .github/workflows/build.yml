@@ -13,17 +13,17 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v3
       - name: Set up Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/bake-action@v2.2.0
         with:
-          context: .
           push: true
-          tags: kaylynn234/kaylynn.gay:latest
-          cache-from: type=registry,ref=kaylynn234/kaylynn.gay:latest
-          cache-to: type=inline
+          set: |
+            website.cache-from.type=registry
+            website.cache-from.ref=kaylynn234/kaylynn.gay:latest
+            website.cache-to.type=inline
