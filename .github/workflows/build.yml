@@ -23,7 +23,8 @@ jobs:
         uses: docker/bake-action@v2.2.0
         with:
           push: true
+          load: false
+          files: docker-bake.hcl
           set: |
-            website.cache-from.type=registry
-            website.cache-from.ref=kaylynn234/kaylynn.gay:latest
-            website.cache-to.type=inline
+            website.cache-from=type=gha
+            website.cache-to=type=gha,mode=max
