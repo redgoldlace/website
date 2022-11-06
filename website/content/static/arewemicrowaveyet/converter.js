@@ -55,9 +55,19 @@ function handleConversion() {
         return;
     }
 
-    let { minutes, seconds } = TIME_PATTTERN.exec(ELEMENTS.inputTime.value).groups;
+    let { rawMinutes, rawSeconds } = TIME_PATTTERN.exec(ELEMENTS.inputTime.value).groups;
+    let [minutes, seconds] = [rawMinutes, rawSeconds].map(count => Number(count));
+
     let totalSeconds = Number(minutes) * 60 + Number(seconds);
-    let convertedTotalSeconds = Math.floor((totalSeconds * Number(ELEMENTS.inputWatts.value)) / Number(ELEMENTS.conversionWatts.value));
+    let inputWatts = Number(ELEMENTS.inputWatts.value);
+    let conversionWatts = Number(ELEMENTS.conversionWatts.value);
+
+    if (conversionWatts === 0) {
+        ELEMENTS.conversionTime.textContent = "... oops. Maybe I should use the oven";
+        return;
+    }
+
+    let convertedTotalSeconds = Math.floor((totalSeconds * inputWatts) / conversionWatts);
 
     let convertedMinutes = Math.floor(convertedTotalSeconds / 60);
     let convertedSeconds = convertedTotalSeconds % 60;
