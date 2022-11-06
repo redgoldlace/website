@@ -1,0 +1,88 @@
+body {
+    height: 100vh;
+
+    color: #2C0703;
+    background-color: #EBD4CB;
+
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.2;
+}
+
+.converter {
+    position: relative;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 150%;
+    text-align: center;
+    word-break: break-word;
+
+    transform: none;
+    opacity: 100%;
+
+    overflow: hidden;
+}
+
+.converter-background {
+    width: 1000%;
+    height: 1000%;
+
+    background: repeat url("https://img.icons8.com/windows/96/null/microwave.png");
+    opacity: 5%;
+    animation: 180s rotate-left infinite linear;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+
+@keyframes rotate-left{
+    0% {
+        transform: rotate(0deg) translate(-50%, -50%);
+        transform-origin: top left;
+    }
+
+    100% {
+        transform: rotate(-360deg) translate(-50%, -50%);
+        transform-origin: top left;
+    }
+}
+
+.converter-contents {
+    max-width: 70%;
+    padding: 1rem;
+
+    background: #EBD4CB;
+    border-radius: 2px;
+    box-shadow: 5px 5px 15px #2c070347;
+
+    z-index: 1;
+}
+
+.converter-contents input[type="text"] {
+    width: 5rem;
+
+    margin: 0 0.25rem;
+    padding: 0;
+
+    color: #2C0703;
+    background-color: transparent;
+
+    outline: none;
+    border: 2px dashed #DA9F93;
+
+    text-align: center;
+}
+
+.converter-contents input[type="text"]::placeholder,
+.converter-contents span  {
+    color: #390A05;
+    opacity: 50%
+}

@@ -257,9 +257,11 @@ img {
 }
 
 .navbar-rest {
+  background-color: var(--hot-pink);
   background-image: repeating-linear-gradient(
     to right,
-    var(--hot-pink), var(--hot-pink) 0.5rem,
+    transparent,
+    transparent 0.5rem,
     var(--blackish) 0.5rem,
     var(--blackish) 1rem
   );

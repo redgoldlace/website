@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <div class="converter">
+    <div class="converter-background"></div>
+    
+    <div class="converter-contents">
+      <p>
+        The instructions say I should cook for
+        <input id="input-time" type="text" placeholder="xx:xx">
+        in a
+        <input id="input-watts" type="text" placeholder="xxxx">
+        watt microwave.
+      </p>
+      <p>
+        My microwave is
+        <input id="conversion-watts" type="text" placeholder="xxxx">
+        watts, so I should cook for
+        <span id="conversion-time" type="text">xx:xx</span>
+        instead.
+      </p>
+    </div>
+  </div>
+
+  <script type="module" src="converter.js"></script>
+</html>
