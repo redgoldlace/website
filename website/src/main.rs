@@ -1,7 +1,12 @@
 use hmac::Hmac;
 use lazy_static::lazy_static;
 use page::PostMap;
-use rocket::{self, catchers, fs::FileServer, routes, tokio::sync::RwLock};
+use rocket::{
+    self, catchers,
+    fs::{FileServer, Options as FsOptions},
+    routes,
+    tokio::sync::RwLock,
+};
 use rocket_dyn_templates::Template;
 use sha2::Sha256;
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
@@ -45,7 +50,10 @@ async fn launch() -> _ {
                 routes::deploy,
             ],
         )
-        .mount("/", FileServer::from("static/"))
+        .mount(
+            "/",
+            FileServer::new("static/", FsOptions::NormalizeDirs | FsOptions::default()),
+        )
         .attach(Template::custom(|engine| {
             engine
                 .tera
