@@ -1,7 +1,7 @@
 const ELEMENTS = {};
 const ELEMENT_IDS = ["input-time", "input-watts", "conversion-watts", "conversion-time"];
 const ELEMENT_NAMES = ["inputTime", "inputWatts", "conversionWatts", "conversionTime"]
-const TIME_PATTTERN = /^(?:(?<minutes>\d+)\:)?(?<seconds>\d+)$/;
+const TIME_PATTTERN = /^(?<minutes>\d*?)\:?(?<seconds>\d{0,2})$/;
 const OLD_VALUES = new Map(ELEMENT_IDS.map(id => [id, ""]));
 
 window.onload = () => {
@@ -55,14 +55,14 @@ function handleConversion() {
         return;
     }
 
-    let { rawMinutes, rawSeconds } = TIME_PATTTERN.exec(ELEMENTS.inputTime.value).groups;
+    let { minutes: rawMinutes, seconds: rawSeconds } = TIME_PATTTERN.exec(ELEMENTS.inputTime.value).groups;
     let [minutes, seconds] = [rawMinutes, rawSeconds].map(count => Number(count));
 
     let totalSeconds = Number(minutes) * 60 + Number(seconds);
     let inputWatts = Number(ELEMENTS.inputWatts.value);
     let conversionWatts = Number(ELEMENTS.conversionWatts.value);
 
-    if (conversionWatts === 0) {
+    if ([inputWatts, conversionWatts].some(value => value === 0)) {
         ELEMENTS.conversionTime.textContent = "... oops. Maybe I should use the oven";
         return;
     }
