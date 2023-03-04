@@ -85,7 +85,7 @@ more receptive, and less hot-headed, and a whole host of other things.
 But oh well. It's been however many hours now? Thanks for reading; I appreciate you sticking around for my ramblings. If
 you have anything you want to say, or think I'm being silly, the usual ways to get in touch with me are all still there.
 
-Until next time!
+Until next time!  
 \- Kaylynn
 
 #### In passing
