@@ -1,8 +1,21 @@
 # Welcome!
-Hey there! My name's Kaylynn.  
-If you wanna know more about me, you can click [here](/about).  
-If you're just here for the blog (why would you do that) you can find that [here](/blog).  
-Otherwise, here's some photos of my cat:
+Hey there! I'm Kaylynn, a programmer/hobbyist/nerd generalist from Australia.
+
+## Places to go
+
+This website is where pretty much all of my internet-ing happens, and there are a few things worth mentioning:
+
+- [The obligatory "about me" page](/about).
+- [Assorted ramblings from yours truly](/blog).
+
+There are also a couple less "proper" bits and pieces strewn about this site. These are mostly things I did for friends
+or myself, so don't think too hard about them!
+
+- [Convert between microwave cooking times](/arewemicrowaveyet). I got tired of doing the math in my head.
+- [A rudimentary Hearthstone deck tracker](/decktracker). I originally made this for a friend who didn't have access to
+  HDT while they were away from home.
+
+If none of those are real interesting, here's some photos of my cat:
 
 <div class="image-gallery">
   <img src="/cat.webp">

@@ -1,6 +1,6 @@
 # About me
-I'm Kaylynn (she/her) - lots of people call me Kay, or just "k", but I'm really not too fussed. Whatever floats your
-boat!
+I'm Kaylynn (she/her) - lots of people call me Kay, or just "k", but Kaylie works too. I'm really not too fussed -
+whatever floats your boat!
 
 I'm a software engineer from Australia, and like many other "good at computer" people I just want to run away from the
 creeping silicon panopticon of modern society to live on my own in the woods with eight cats. Teaching sand to think was
@@ -21,7 +21,10 @@ occasionally too, and most of that ends up here on my blog.
 - Functional programming, category theory, type systems.
 - Compilers, low-level and systems programming.
 - Music! I love music. Please please please send me music! I listen to a bunch of stuff, so don't worry about genre.
-- Digital art and 3D modelling - I hop into blender every so often.
+- Digital art and 3D modelling. I hop into blender every so often.
+- Mahjong. I'm not the best at it, but I enjoy it a lot! The client I use is
+  [MahjongSoul](https://mahjongsoul.yo-star.com/), and my UID is `122978798`. If you wanna play sometime, feel free to
+  get in touch!
 
 ## Languages, technologies and other indecencies
 - Rust. It's what I use for this site!
