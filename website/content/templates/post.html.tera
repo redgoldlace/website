@@ -2,9 +2,10 @@
 {% import "macros" as macros %}
 {% block title -%} {{ title }} {% endblock title %}
 {% block content %}
-<div class="post-description">
-    <h1 class="post-header">{{ title }}</h1>
-    {{ macros::published_at(when=published) }}
-</div>
-{{ content | safe }}
+  <div class="post-description">
+      <h1 class="post-header">{{ title }}</h1>
+      {{ macros::published_at(when=published) }}
+  </div>
+
+  {{ content | safe }}
 {% endblock content %}

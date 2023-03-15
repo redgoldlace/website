@@ -1,4 +1,4 @@
-{% extends "base" %}
+{% extends "page" %}
 {% import "macros" as macros %}
 {% block title -%} Blog {% endblock title %}
 {% block content %}
