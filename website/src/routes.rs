@@ -105,10 +105,10 @@ pub async fn rss_feed(config: &State<WrappedPostMap>) -> Xml<String> {
     let posts = config.read().await;
     let rss = posts.rss();
 
-    // SAFETY: This shouldn't fail, as vectors will grow when required.
+    // Panic safety: Vectors will grow when required.
     let buffer = rss.pretty_write_to(Vec::new(), b' ', 2).unwrap();
 
-    // SAFETY: The various inputs are already valid UTF-8, so realistically it should be impossible for this to fail.
+    // Panic safety: The various inputs are already valid UTF-8, so realistically it should be impossible for this to fail.
     Xml(String::from_utf8(buffer).unwrap())
 }
 

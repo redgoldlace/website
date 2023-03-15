@@ -158,7 +158,7 @@ fn highlight<'a>(root: &'a AstNode<'a>) {
         let mut data = node.data.borrow_mut();
 
         if let NodeValue::CodeBlock(ref codeblock) = data.value {
-            // SAFETY: I solemnly swear I will never include invalid UTF-8 inside of my website.
+            // Panic safety: I solemnly swear I will never include invalid UTF-8 inside of my website.
             let language = from_utf8(&codeblock.info).unwrap();
             let code = from_utf8(&codeblock.literal).unwrap();
 
