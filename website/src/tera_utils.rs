@@ -4,12 +4,9 @@ use rocket_dyn_templates::tera::{Error, Result, Value};
 use std::collections::HashMap;
 
 pub fn humanise(value: &Value, _: &HashMap<String, Value>) -> Result<Value> {
-    let input = match value {
-        Value::String(string) => Ok(string),
-        _ => Err(Error::msg("Value is not a string")),
-    }?;
-
-    let post_date = input
+    let post_date = value
+        .as_str()
+        .ok_or_else(|| Error::msg("Value is not a string"))?
         .parse::<DateTime<Local>>()
         .map_err(|_| Error::msg("Unable to parse time"))?;
 
