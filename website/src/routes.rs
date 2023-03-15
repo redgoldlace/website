@@ -19,7 +19,8 @@ pub fn default_catcher(status: Status, _: &Request) -> Page {
     Page::new(
         PageKind::Error,
         context! {
-            "reason" => format!("Status code {}: {}.", status.code, status.reason_lossy())
+            "reason" => format!("Status code {}: {}.", status.code, status.reason_lossy()),
+            "hide_navbar" => true,
         },
     )
 }
