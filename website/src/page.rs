@@ -16,7 +16,10 @@ use rocket::{
 use rocket_dyn_templates::Template;
 use rss::{Channel, ChannelBuilder, GuidBuilder, ImageBuilder, ItemBuilder};
 use serde_json::Value;
-use std::{fmt::Display, io::Error as IoError, path::Path, str::from_utf8, string::FromUtf8Error};
+use std::{
+    borrow::Cow, fmt::Display, io::Error as IoError, path::Path, str::from_utf8,
+    string::FromUtf8Error,
+};
 use syntect::{
     html::{ClassStyle, ClassedHTMLGenerator},
     util::LinesWithEndings,
@@ -208,7 +211,7 @@ impl From<String> for Fragment {
     }
 }
 
-fn description<'a>(root: &'a AstNode<'a>) -> Option<String> {
+fn get_description<'a>(root: &'a AstNode<'a>) -> Option<String> {
     const DESCRIPTION_LENGTH: usize = 200;
 
     let first_paragraph = root
@@ -216,9 +219,9 @@ fn description<'a>(root: &'a AstNode<'a>) -> Option<String> {
         .find(|node| matches!(node.data.borrow().value, NodeValue::Paragraph))?
         .children();
 
-    let mut buffer = String::new();
+    let mut description = String::new();
 
-    fn extend_buffer<'a>(buffer: &mut String, nodes: impl Iterator<Item = &'a AstNode<'a>>) {
+    fn extend_description<'a>(buffer: &mut String, nodes: impl Iterator<Item = &'a AstNode<'a>>) {
         for node in nodes {
             match &node.data.borrow().value {
                 NodeValue::Text(bytes) => buffer.push_str(&String::from_utf8_lossy(bytes)),
@@ -227,33 +230,24 @@ fn description<'a>(root: &'a AstNode<'a>) -> Option<String> {
                 NodeValue::Emph
                 | NodeValue::Strong
                 | NodeValue::Strikethrough
-                | NodeValue::Superscript => extend_buffer(buffer, node.children()),
+                | NodeValue::Superscript => extend_description(buffer, node.children()),
                 _ => continue,
             }
         }
     }
 
-    extend_buffer(&mut buffer, first_paragraph);
+    extend_description(&mut description, first_paragraph);
 
-    let (len, end) = buffer
+    let trim_at = description
         .char_indices()
+        .map(|(index, char)| index + char.len_utf8())
         .zip(1..)
-        .map(|((index, char), len)| (len, index + char.len_utf8()))
-        .take(DESCRIPTION_LENGTH + 3)
-        .last()?;
+        .find_map(|(byte_offset, n)| (n >= DESCRIPTION_LENGTH).then_some(byte_offset));
 
-    if len > DESCRIPTION_LENGTH {
-        let offset = buffer[..end]
-            .chars()
-            .rev()
-            .take(3)
-            .map(char::len_utf8)
-            .sum::<usize>();
-
-        return Some(format!("{} [...]", &buffer[..end - offset].trim()));
+    match trim_at {
+        Some(end) => Some(format!("{} [...]", &description[..end].trim())),
+        None => Some(description),
     }
-
-    Some(buffer[..end].to_owned())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -267,7 +261,7 @@ pub struct PostInfo {
     // Realistically this could be some self-referential slice but I'm not that much of a masochist. Nor am I a C
     // programmer.
     #[serde(skip_deserializing)]
-    pub description: String,
+    pub description: Cow<'static, str>,
 }
 
 impl PostInfo {
@@ -282,8 +276,9 @@ impl PostInfo {
             _ => None,
         });
 
-        let description =
-            description(root).unwrap_or_else(|| "No description provided.".to_owned());
+        let description = get_description(root)
+            .map(Cow::from)
+            .unwrap_or_else(|| "No description provided.".into());
 
         let mut buffer = Vec::new();
         comrak::format_html(root, &OPTIONS, &mut buffer)?;
@@ -391,7 +386,7 @@ pub fn build_rss(pages: &IndexMap<String, PostInfo>) -> Channel {
                                 .permalink(true)
                                 .build(),
                         ))
-                        .description(Some(info.description.clone()))
+                        .description(Some(info.description.into_owned()))
                         .pub_date(Some(info.published.to_rfc2822()))
                         .build()
                 })
