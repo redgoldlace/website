@@ -183,12 +183,10 @@ pub async fn deploy(
     let raw = String::from_utf8_lossy(body.as_ref());
     let payload = Value::from_str(&raw).unwrap();
 
-    // We don't want to trigger a shutdown until the actions run is completed and a new image is present on Docker Hub
-    if payload["action"] != "completed" {
-        return Ok(());
+    // We only want to trigger a shutdown once the actions run is completed and a new image is present on Docker Hub
+    if payload["action"] == "completed" {
+        shutdown.notify();
     }
-
-    shutdown.notify();
 
     Ok(())
 }

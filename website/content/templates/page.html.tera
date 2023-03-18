@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="theme-light">
   <head>
-    <title>{% block title %} Kaylynn's website {% endblock title %}</title>
+    <title>{% block title %} {{ title | default(value="Kaylynn's website") }} {% endblock title %}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Kaylynn" />
     <meta property="og:site_name" content="Kaylynn's website" />
     <meta property="og:image" content="https://kaylynn.gay/favicon.png" />
-    {% if og_title %}
-    <meta property="og:title" content="{{ og_title }}" />
-    {% endif %} {% if og_description %}
-    <meta property="og:description" content="{{ og_description }}" />
+    {% if title %}
+    <meta property="og:title" content="{{ title }}" />
+    {% endif %} {% if description %}
+    <meta property="og:description" content="{{ description }}" />
     {% endif %}
     <link rel="stylesheet" href="/style.css" />
     <link rel="shortcut icon" type="image/png" href="/favicon.png" />
