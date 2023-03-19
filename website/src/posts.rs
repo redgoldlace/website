@@ -3,6 +3,7 @@ use comrak::Arena;
 use indexmap::IndexMap;
 use rss::{Channel, ChannelBuilder, GuidBuilder, ImageBuilder, ItemBuilder};
 use std::{borrow::Borrow, ffi::OsStr, hash::Hash, io::Result as IoResult, path::Path};
+use tracing::{event, Level};
 
 use crate::{page::Page, page::PostMetadata};
 
@@ -20,12 +21,17 @@ impl Posts {
         Posts { pages, rss }
     }
 
-    /// Read posts from the `directory` and update this `Posts` instance.
+    /// Read posts from `directory` and update this `Posts` instance.
+    #[tracing::instrument(
+        skip(self, directory),
+        fields(directory = %directory.as_ref().display())
+    )]
     pub fn refresh(&mut self, directory: &impl AsRef<Path>) -> IoResult<()> {
         let arena = Arena::new();
 
         let mut pages = IndexMap::new();
         let mut entries = std::fs::read_dir(directory.as_ref())?;
+        let mut error_count = 0;
 
         while let Some(entry) = entries.next().transpose()? {
             let full_path = entry.path();
@@ -39,8 +45,21 @@ impl Posts {
             let content = std::fs::read_to_string(&full_path)?;
 
             match Page::build::<PostMetadata>(&arena, &content) {
-                Ok(page) => _ = pages.insert(slug, page),
-                Err(error) => eprintln!("error rendering post {}: {}", slug, error),
+                Ok(page) => {
+                    event!(Level::INFO, slug, "Successfully imported post",);
+
+                    pages.insert(slug, page);
+                }
+                Err(error) => {
+                    event!(
+                        Level::ERROR,
+                        slug,
+                        error = &error as &dyn std::error::Error,
+                        "Error importing post"
+                    );
+
+                    error_count += 1;
+                }
             };
         }
 
@@ -54,6 +73,16 @@ impl Posts {
         let rss = rss_channel(&pages);
 
         *self = Posts { pages, rss };
+
+        match error_count {
+            0 => event!(Level::INFO, "All posts imported successfully"),
+            _ => event!(
+                Level::WARN,
+                error_count,
+                "Unable to import {} posts",
+                error_count
+            ),
+        }
 
         Ok(())
     }
