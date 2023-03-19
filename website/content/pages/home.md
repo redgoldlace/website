@@ -1,3 +1,8 @@
+---
+title = "Home"
+description = "Computers, cats, and eternal sleepiness"
+---
+
 # Welcome!
 Hey there! I'm Kaylynn, a programmer/hobbyist/nerd generalist from Australia.
 

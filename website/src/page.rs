@@ -1,32 +1,45 @@
+use axum::{http::StatusCode, response::Html};
 use chrono::{DateTime, FixedOffset, Local, TimeZone};
-use serde::{de::Error, Deserialize, Deserializer};
-use serde_json::Value;
-use std::borrow::Cow;
+use comrak::Arena;
+use serde::{de::DeserializeOwned, de::Error, Deserialize, Deserializer};
+use std::{borrow::Cow, path::Path};
+use tera::{Context, Value};
 use toml::value::Datetime as TomlDateTime;
 
 use crate::{
     context,
     markdown::{self, NodeArena, NodeRef, TomlResult},
+    templates::Engine,
 };
 
 const PREVIEW_CHARACTER_LIMIT: usize = 200;
 
+#[derive(Debug)]
 pub struct Page {
     template_name: Cow<'static, str>,
-    context: Value,
+    context: Context,
 }
 
 impl Page {
-    pub fn new(template_name: impl Into<Cow<'static, str>>, context: Value) -> Self {
+    pub fn new(template_name: impl Into<Cow<'static, str>>, context: Context) -> Self {
         Self {
             template_name: template_name.into(),
             context,
         }
     }
 
-    pub fn build<'a, 'i, M>(arena: NodeArena<'a>, content: &'i str) -> TomlResult<Self>
+    // TODO: use a diff. error type
+    pub fn simple(path: impl AsRef<Path>) -> Result<Self, Box<dyn std::error::Error>> {
+        let content = std::fs::read_to_string(path)?;
+        let arena = Arena::new();
+        let page = Self::build::<StaticMetadata>(&arena, &content)?;
+
+        Ok(page)
+    }
+
+    pub fn build<'a, M>(arena: NodeArena<'a>, content: &str) -> TomlResult<Self>
     where
-        M: Deserialize<'i> + IntoPage,
+        M: DeserializeOwned + IntoPage + 'static,
     {
         let (metadata, document) = markdown::parse::<M>(&arena, content)?;
 
@@ -34,17 +47,34 @@ impl Page {
     }
 
     pub fn title(&self) -> Option<String> {
-        self.context["title"].as_str().map(str::to_owned)
+        self.context
+            .get("title")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
     }
 
     pub fn description(&self) -> Option<String> {
-        self.context["description"].as_str().map(str::to_owned)
+        self.context
+            .get("description")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
     }
 
     pub fn published(&self) -> Option<DateTime<FixedOffset>> {
-        self.context["published"]
-            .as_str()
+        self.context
+            .get("published")
+            .and_then(Value::as_str)
             .and_then(|date| DateTime::parse_from_rfc3339(date).ok())
+    }
+
+    pub fn render(&self, engine: &Engine) -> Result<Html<String>, (StatusCode, String)> {
+        engine
+            .render(&format!("{}.html.tera", self.template_name), &self.context)
+            .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error.to_string()))
+    }
+
+    pub fn context(&self) -> &Context {
+        &self.context
     }
 }
 

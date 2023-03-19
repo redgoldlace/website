@@ -1,4 +1,4 @@
-{% extends "page" %}
+{% extends "page.html.tera" %}
 {% block title -%} heck... {% endblock title %}
 {% block content %}
 <div class="center">

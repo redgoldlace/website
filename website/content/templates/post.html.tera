@@ -1,5 +1,5 @@
-{% extends "page" %}
-{% import "macros" as macros %}
+{% extends "page.html.tera" %}
+{% import "macros.html.tera" as macros %}
 {% block title -%} {{ title }} {% endblock title %}
 {% block content %}
   <div class="post-description">

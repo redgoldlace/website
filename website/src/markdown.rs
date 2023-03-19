@@ -4,7 +4,7 @@ use comrak::{
     Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
 };
 use lazy_static::lazy_static;
-use serde::Deserialize;
+use serde::de::DeserializeOwned;
 use syntect::{
     html::{ClassStyle, ClassedHTMLGenerator},
     util::LinesWithEndings,
@@ -54,9 +54,9 @@ pub fn render<'a>(document: NodeRef<'a>) -> String {
 /// front matter and deserialized into the type `M`. The front matter is assumed to be in TOML format.
 ///
 /// This function returns an error if deserializing into `M` fails.
-pub fn parse<'a, 'i, M>(arena: NodeArena<'a>, content: &'i str) -> TomlResult<(M, NodeRef<'a>)>
+pub fn parse<'a, 'de, M>(arena: NodeArena<'a>, content: &str) -> TomlResult<(M, NodeRef<'a>)>
 where
-    M: Deserialize<'i>,
+    M: DeserializeOwned,
 {
     let document = comrak::parse_document(&arena, content, &COMRAK_OPTIONS);
 
@@ -92,6 +92,8 @@ pub fn traverse<'a>(root: &'a AstNode<'a>) -> impl Iterator<Item = &'a AstNode<'
 /// For each fenced codeblock in the AST, the codeblock is parsed and syntax highlighting is performed. Then the
 /// original AST node is replaced with an inline HTML node containing the highlighted output.
 pub fn highlight<'a>(root: &'a AstNode<'a>) {
+    let syntax_set = SYNTAX_SET.read().unwrap();
+
     for node in traverse(root) {
         let mut data = node.data.borrow_mut();
 
@@ -100,9 +102,9 @@ pub fn highlight<'a>(root: &'a AstNode<'a>) {
             let language = std::str::from_utf8(&codeblock.info).unwrap();
             let code = std::str::from_utf8(&codeblock.literal).unwrap();
 
-            let syntax_reference = SYNTAX_SET
+            let syntax_reference = syntax_set
                 .find_syntax_by_extension(language)
-                .or_else(|| SYNTAX_SET.find_syntax_by_name(language));
+                .or_else(|| syntax_set.find_syntax_by_name(language));
 
             let syntax_reference = match syntax_reference {
                 Some(reference) => reference,
@@ -111,7 +113,7 @@ pub fn highlight<'a>(root: &'a AstNode<'a>) {
 
             let mut html_generator = ClassedHTMLGenerator::new_with_class_style(
                 syntax_reference,
-                &SYNTAX_SET,
+                &syntax_set,
                 ClassStyle::SpacedPrefixed { prefix: "hl-" },
             );
 

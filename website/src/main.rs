@@ -1,80 +1,81 @@
-use hmac::Hmac;
-use lazy_static::lazy_static;
-use page::PostMap;
-use rocket::{
-    self, catchers,
-    fs::{FileServer, Options as FsOptions},
-    routes,
-    tokio::sync::RwLock,
+use axum::{
+    body::Body,
+    routing::{get, post},
+    Extension, Router, Server,
 };
-use rocket_dyn_templates::Template;
-use sha2::Sha256;
+use lazy_static::lazy_static;
+use shutdown::Shutdown;
+use state::{Config, State};
+use std::{
+    net::SocketAddr,
+    sync::{Arc, RwLock},
+};
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
+use tower::ServiceBuilder;
+use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
+use tracing::Level;
 
-mod page;
-mod routes;
-mod tera_util;
+mod error;
 mod markdown;
+mod page;
 mod posts;
-
-/// Alias for convenience
-pub type WrappedPostMap = RwLock<PostMap>;
-pub type WrappedSecret = Hmac<Sha256>;
+mod routes;
+mod shutdown;
+mod state;
+mod templates;
 
 lazy_static! {
-    pub static ref SECRET: Option<String> = std::env::var("WEBHOOK_SECRET").ok();
-    pub static ref SYNTAX_SET: SyntaxSet = {
-        let mut builder = SyntaxSetBuilder::new();
-        builder
-            .add_from_folder("syntaxes/", true)
-            .expect("failed to load syntaxes");
+    pub static ref SYNTAX_SET: Arc<RwLock<SyntaxSet>> = Default::default();
+}
 
-        builder.build()
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let profile = match cfg!(debug_assertions) {
+        true => "debug",
+        false => "release",
     };
-}
 
-#[macro_export]
-macro_rules! context {
-    ($($key:expr => $value:expr,)+) => { context! {$($key => $value),*} };
-    ($($key:expr => $value:expr),*) => {{
-        let mut map: ::serde_json::Map<::std::string::String, ::serde_json::Value> = ::serde_json::Map::new();
-        $(map.insert($key.into(), $value.into());)*
-        let as_value: ::serde_json::Value = map.into();
-        as_value
-    }};
-}
+    tracing_subscriber::fmt()
+        .with_target(false)
+        .with_ansi(true)
+        .compact()
+        .init();
 
-#[rocket::launch]
-async fn launch() -> _ {
-    // This is bad but I'm tired. Essentially we want to have this built here so that we panic at startup if things go
-    // wrong.
-    let _ = &*SYNTAX_SET;
+    let config = Config::figment().select(profile).extract::<Config>()?;
+    let address = config.host().address();
+    let port = config.host().port();
 
-    rocket::build()
-        .register("/", catchers![routes::default_catcher])
-        .mount(
-            "/",
-            routes![
-                routes::home,
-                routes::about_me,
-                routes::post,
-                routes::post_list,
-                routes::rss_feed,
-                routes::deploy,
-            ],
-        )
-        .mount(
-            "/",
-            FileServer::new("static/", FsOptions::NormalizeDirs | FsOptions::default()),
-        )
-        .attach(Template::custom(|engine| {
-            engine
-                .tera
-                .register_filter("humanise", tera_util::humanise)
-        }))
-        .manage(RwLock::new(
-            page::PostMap::try_new()
-                .await
-                .expect("unable to open page config"),
-        ))
+    // This is a really, really evil hack. But doing it this way prevents us from passing it down the call stack when
+    // parsing/rendering markdown, which is a lot nicer.
+    let mut builder = SyntaxSetBuilder::new();
+    builder.add_from_folder(&config.content_dir().join("syntaxes"), true)?;
+    *SYNTAX_SET.write().unwrap() = builder.build();
+
+    let (shutdown, signal) = Shutdown::new();
+    let state = State::try_new(config)?;
+    let trace_service = TraceLayer::new_for_http()
+        .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+        .on_response(DefaultOnResponse::new().level(Level::INFO));
+
+    let services = ServiceBuilder::new()
+        .layer(trace_service)
+        .layer(Extension(shutdown))
+        .layer(Extension(state))
+        .layer(axum::middleware::from_fn(error::to_error_page));
+
+    let router = Router::<(), Body>::new()
+        .route("/", get(routes::simple("pages/home.md")))
+        .route("/about", get(routes::simple("pages/about.md")))
+        .route("/deploy", post(routes::deploy))
+        .route("/blog", get(routes::post_list))
+        .route("/blog/feed", get(routes::rss_feed))
+        .route("/blog/post/:slug", get(routes::post))
+        .layer(services);
+
+    Server::bind(&SocketAddr::new(address, port))
+        .serve(router.into_make_service())
+        .with_graceful_shutdown(signal)
+        .await?;
+
+    Ok(())
 }

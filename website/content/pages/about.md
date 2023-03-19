@@ -1,3 +1,8 @@
+---
+title = "About me"
+description = "It's me!"
+---
+
 # About me
 I'm Kaylynn (she/her) - lots of people call me Kay, or just "k", but Kaylie works too. I'm really not too fussed -
 whatever floats your boat!

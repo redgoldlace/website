@@ -1,116 +1,111 @@
-use std::str::FromStr;
+use std::{
+    future::Future,
+    path::{Path as FsPath, PathBuf},
+    pin::Pin,
+    str::FromStr,
+    task::{Context as TaskContext, Poll},
+};
 
-use crate::{
-    context,
-    page::{Page, PageKind},
-    WrappedPostMap, SECRET,
+use crate::{context, page::Page, shutdown::Shutdown, state::State};
+use axum::{
+    body::Bytes,
+    extract::{FromRequestParts, Path},
+    http::{request::Parts, HeaderValue, StatusCode},
+    response::{Html, IntoResponse, Response},
 };
 use hex::ToHex;
 use hmac::{Hmac, Mac, NewMac};
-use rocket::{
-    data::ToByteUnit, http::Status, outcome::IntoOutcome, request::FromRequest,
-    response::content::Xml, Data, Request, Shutdown, State,
-};
+use hyper::header;
 use serde_json::Value;
 use sha2::Sha256;
+use tera::Context;
 
-#[rocket::catch(default)]
-pub fn default_catcher(status: Status, _: &Request) -> Page {
-    Page::new(
-        PageKind::Error,
-        context! {
-            "reason" => format!("Status code {}: {}.", status.code, status.reason_lossy()),
-            "hide_navbar" => true,
-        },
-    )
+#[derive(Debug, Clone)]
+pub struct StaticPage {
+    state: State,
+    path: PathBuf,
 }
 
-async fn render_simple(title: &str, path: &str, description: &str) -> Option<Page> {
-    let result = Page::new(
-        PageKind::Simple,
-        context! {
-            "title" => title,
-            "content" => Page::render_markdown(path).await.ok()?,
-            "og_title" => title,
-            "og_description" => description,
-        },
-    );
-
-    Some(result)
+impl StaticPage {
+    pub fn new(state: State, path: PathBuf) -> Self {
+        Self { state, path }
+    }
 }
 
-#[rocket::get("/")]
-pub async fn home() -> Option<Page> {
-    render_simple(
-        "Home",
-        "pages/home.md",
-        "Computers, cats, and eternal sleepiness",
-    )
-    .await
+impl Future for StaticPage {
+    type Output = Result<Html<String>, (StatusCode, String)>;
+
+    fn poll(self: Pin<&mut Self>, _cx: &mut TaskContext<'_>) -> Poll<Self::Output> {
+        let result = Page::simple(&self.path)
+            .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error.to_string()))
+            .and_then(|page| page.render(&self.state.engine()));
+
+        Poll::Ready(result)
+    }
 }
 
-#[rocket::get("/about")]
-pub async fn about_me() -> Option<Page> {
-    render_simple(
-        "About me",
-        "pages/about.md",
-        "It's me!",
-    )
-    .await
+/// Create a handler that renders the page at `path`, relative to the application's content directory.
+pub fn simple<T>(path: &'static T) -> impl (Fn(State) -> StaticPage) + Clone
+where
+    T: AsRef<FsPath> + ?Sized,
+{
+    move |state| {
+        let full_path = state.config().content_dir().join(path);
+
+        StaticPage::new(state, full_path)
+    }
 }
 
-#[rocket::get("/blog")]
-pub async fn post_list(config: &State<WrappedPostMap>) -> Page {
-    let posts: Vec<_> = config
-        .read()
-        .await
+pub async fn post_list(state: State) -> Response {
+    let context_for = |slug: &str, context: &Context| -> Option<Value> {
+        let mut new = Context::new();
+        new.insert("slug", slug);
+        new.insert("title", context.get("title")?);
+        new.insert("published", context.get("published")?);
+
+        Some(new.into_json())
+    };
+
+    let posts: Vec<_> = state
+        .posts()
         .iter()
-        .map(|(slug, info)| {
-            context! {
-                "slug" => slug.to_owned(),
-                "title" => info.title.to_owned(),
-                "published" => info.published.to_rfc3339(),
-            }
-        })
+        .filter_map(|(slug, page)| context_for(slug, page.context()))
         .collect();
 
-    Page::new(
-        PageKind::PostList,
+    let page = Page::new(
+        "post-list",
         context! {
             "title" => "Kaylynn's blog",
             "posts" => posts,
         },
-    )
-}
-
-#[rocket::get("/blog/post/<slug>")]
-pub async fn post(config: &State<WrappedPostMap>, slug: String) -> Option<Page> {
-    let posts = config.read().await;
-    let info = posts.get(&slug)?;
-    let result = Page::new(
-        PageKind::Post,
-        context! {
-            "title" => info.title.as_str(),
-            "og_title" => info.title.as_str(),
-            "og_description" => info.description.as_str(),
-            "published" => info.published.to_rfc3339(),
-            "content" => info.rendered.to_owned(),
-        },
     );
 
-    Some(result)
+    page.render(state.engine()).into_response()
 }
 
-#[rocket::get("/blog/feed.rss")]
-pub async fn rss_feed(config: &State<WrappedPostMap>) -> Xml<String> {
-    let posts = config.read().await;
-    let rss = posts.rss();
+pub async fn post(Path(slug): Path<String>, state: State) -> Response {
+    state
+        .posts()
+        .get(&slug)
+        .map(|page| page.render(state.engine()))
+        .ok_or((StatusCode::NOT_FOUND, "Blog post not found!"))
+        .into_response()
+}
 
-    // Panic safety: Vectors will grow when required.
+pub async fn rss_feed(state: State) -> Response {
+    let rss = state.posts().rss();
+    let headers = [(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/rss+xml; charset=UTF-8"),
+    )];
+
+    // Panic safety:
+    // A) Vectors will grow when required.
+    // B) The various inputs are already valid UTF-8.
     let buffer = rss.pretty_write_to(Vec::new(), b' ', 2).unwrap();
+    let xml = String::from_utf8(buffer).unwrap();
 
-    // Panic safety: The various inputs are already valid UTF-8, so realistically it should be impossible for this to fail.
-    Xml(String::from_utf8(buffer).unwrap())
+    (headers, xml).into_response()
 }
 
 trait MacExt {
@@ -124,49 +119,48 @@ impl<M: Mac> MacExt for M {
     }
 }
 
-pub struct Secret<'r>(&'r str);
+pub struct Secret(String);
 
-impl<'r> Secret<'r> {
+impl Secret {
     fn value(&self) -> &str {
-        self.0
+        &self.0
     }
 }
 
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for Secret<'r> {
-    type Error = &'static str;
+#[axum::async_trait]
+impl<S> FromRequestParts<S> for Secret
+where
+    S: Send + Sync,
+{
+    type Rejection = (StatusCode, &'static str);
 
-    async fn from_request(request: &'r Request<'_>) -> rocket::request::Outcome<Self, Self::Error> {
-        request
-            .headers()
-            .get_one("X-Hub-Signature-256")
-            .into_outcome((Status::Unauthorized, "Missing signature"))
-            .and_then(|secret| {
-                secret
-                    .trim()
-                    .strip_prefix("sha256=")
-                    .into_outcome((Status::BadRequest, "Invalid signature format"))
-                    .map(Secret)
-            })
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let raw_signature = parts
+            .headers
+            .get("X-Hub-Signature-256")
+            .ok_or((StatusCode::UNAUTHORIZED, "Missing signature"))?
+            .as_bytes();
+
+        std::str::from_utf8(raw_signature)
+            .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UTF-8 in signature"))?
+            .trim()
+            .strip_prefix("sha256=")
+            .ok_or((StatusCode::BAD_REQUEST, "Invalid signature format"))
+            .map(str::to_owned)
+            .map(Secret)
     }
 }
 
-#[rocket::post("/deploy", data = "<data>")]
 pub async fn deploy(
     shutdown: Shutdown,
-    data: Data<'_>,
-    request_secret: Secret<'_>,
-) -> Result<(), (Status, &'static str)> {
-    let mut body = Vec::new();
-
-    data.open(25.megabytes())
-        .stream_to(&mut body)
-        .await
-        .unwrap();
-
-    let secret = SECRET
-        .as_deref()
-        .ok_or((Status::InternalServerError, "No secret configured"))?
+    request_secret: Secret,
+    state: State,
+    body: Bytes,
+) -> Result<(), (StatusCode, &'static str)> {
+    let secret = state
+        .config()
+        .webhook_secret()
+        .ok_or((StatusCode::SERVICE_UNAVAILABLE, "No secret configured"))?
         .as_bytes();
 
     let sha = Hmac::<Sha256>::new_from_slice(secret)
@@ -177,15 +171,16 @@ pub async fn deploy(
         .encode_hex::<String>();
 
     if sha != request_secret.value() {
-        return Err((Status::Unauthorized, "Invalid signature"));
+        return Err((StatusCode::UNAUTHORIZED, "Invalid signature"));
     }
 
     let raw = String::from_utf8_lossy(body.as_ref());
-    let payload = Value::from_str(&raw).unwrap();
+    let payload = Value::from_str(&raw)
+        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid JSON in request body"))?;
 
     // We only want to trigger a shutdown once the actions run is completed and a new image is present on Docker Hub
     if payload["action"] == "completed" {
-        shutdown.notify();
+        shutdown.notify().await;
     }
 
     Ok(())

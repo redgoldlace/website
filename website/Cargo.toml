@@ -1,20 +1,29 @@
 [package]
 name = "website"
-version = "0.1.0"
+version = "2.0.0"
 edition = "2021"
 
 [dependencies]
-chrono = { version = "0.4.19", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"] }
 chrono-humanize = "0.2"
-comrak = "0.10.1"
-hex = "0.4.3"
-hmac = "0.11.0"
-rocket = { version = "0.5.0-rc.1", features = ["json"] }
-rocket_dyn_templates = { version = "0.1.0-rc.1", features = ["tera"] }
-rss = { version = "2.0.0", features = ["with-serde"]}
-sha2 = "0.9.5"
+comrak = "0.10"
+hex = "0.4"
+hmac = "0.11"
+rss = { version = "2", features = ["with-serde"] }
+sha2 = "0.9"
 syntect = { git = "https://github.com/trishume/syntect" }
 toml = "0.5"
-lazy_static = "1.4.0"
-indexmap = { version = "1.6.2", features = ["serde-1"] }
-serde_json = { version = "1.0.64", features = ["preserve_order"] }
+lazy_static = "1.4"
+indexmap = { version = "1.6", features = ["serde-1"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+axum = { version = "0.6.11", features = ["headers", "macros"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1", features = ["derive"] }
+tera = "1.18.1"
+figment = { version = "0.10", features = ["toml", "env"] }
+hyper = { version = "0.14", features = ["runtime", "server", "tcp", "http1"] }
+tower = "0.4"
+bitflags = "2.0"
+tower-http = { version = "0.4", features = ["trace"] }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+tracing = "0.1.37"

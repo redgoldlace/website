@@ -2,10 +2,11 @@ use chrono::DateTime;
 use comrak::Arena;
 use indexmap::IndexMap;
 use rss::{Channel, ChannelBuilder, GuidBuilder, ImageBuilder, ItemBuilder};
-use std::{cmp::Ordering, ffi::OsStr, io::Result as IoResult};
+use std::{borrow::Borrow, ffi::OsStr, hash::Hash, io::Result as IoResult, path::Path};
 
 use crate::{page::Page, page::PostMetadata};
 
+#[derive(Debug)]
 pub struct Posts {
     pages: IndexMap<String, Page>,
     rss: Channel,
@@ -19,11 +20,12 @@ impl Posts {
         Posts { pages, rss }
     }
 
-    pub fn refresh(&mut self) -> IoResult<()> {
+    /// Read posts from the `directory` and update this `Posts` instance.
+    pub fn refresh(&mut self, directory: &impl AsRef<Path>) -> IoResult<()> {
         let arena = Arena::new();
 
         let mut pages = IndexMap::new();
-        let mut entries = std::fs::read_dir("blog-pages")?;
+        let mut entries = std::fs::read_dir(directory.as_ref())?;
 
         while let Some(entry) = entries.next().transpose()? {
             let full_path = entry.path();
@@ -36,14 +38,16 @@ impl Posts {
 
             let content = std::fs::read_to_string(&full_path)?;
 
-            let page = match Page::build::<PostMetadata>(&arena, &content) {
+            match Page::build::<PostMetadata>(&arena, &content) {
                 Ok(page) => _ = pages.insert(slug, page),
                 Err(error) => eprintln!("error rendering post {}: {}", slug, error),
             };
         }
 
-        let cursed_cmp_helper = |a: &Page, b: &Page| Some(a.published()?.cmp(&b.published()?));
-        pages.sort_by(|_, a, _, b| cursed_cmp_helper(a, b).unwrap_or(Ordering::Equal));
+        // Look, I don't make the rules. But for some reason things need to be swapped around if we want them to be
+        // ordered properly.
+        let cursed_cmp_helper = |a: &Page, b: &Page| Some(b.published()?.cmp(&a.published()?));
+        pages.sort_by(|_, a, _, b| cursed_cmp_helper(a, b).unwrap());
 
         // It's important that this is done after the sorting step, since `rss_channel` expects the mapping to be in
         // sorted order.
@@ -52,6 +56,22 @@ impl Posts {
         *self = Posts { pages, rss };
 
         Ok(())
+    }
+
+    pub fn get<Q>(&self, key: &Q) -> Option<&Page>
+    where
+        Q: Eq + Hash + ?Sized,
+        String: Borrow<Q>,
+    {
+        self.pages.get(key)
+    }
+
+    pub fn rss(&self) -> &Channel {
+        &self.rss
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&str, &Page)> {
+        self.pages.iter().map(|(slug, page)| (slug.as_str(), page))
     }
 }
 
