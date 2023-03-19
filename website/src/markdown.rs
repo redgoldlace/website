@@ -118,7 +118,7 @@ pub fn highlight<'a>(root: &'a AstNode<'a>) {
             );
 
             for line in LinesWithEndings::from(code) {
-                html_generator.parse_html_for_line_which_includes_newline(line)
+                let _ = html_generator.parse_html_for_line_which_includes_newline(line);
             }
 
             // What follows may be considered a crime
