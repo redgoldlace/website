@@ -5,7 +5,7 @@ It's comprised of a relatively simple backend that you might be interested in.
 
 Past that, this is MIT licensed! Do with it what you will, though I'm not sure how much use you'll find it.
 
-## Advice (mostly for me)
+## Notes
 
 Running this application is fairly straightforward, but you will want to set it up behind a web server (like Caddy or
 nginx) and do a little bit of configuration.
@@ -14,16 +14,38 @@ The "content directory" can be found in this repository, under `website/content`
 templates used by the application when rendering. You can put this directory wherever you want, but the application
 needs to be configured so that it knows where it is. See the section on configuration for more details.
 
-### The easy way out
+## Taking the easy way out
 
 Alternatively: "just use Docker"
 
 0.  Make sure your CWD is the repository root. `docker-bake.hcl`, `Dockerfile`, and this very `README.md` should be in
     your **current directory**. If they're not, it's time to whip out `cd` and fix that.
-1.  Run `docker buildx bake` to build a docker image for the application.
-2.  Run `docker compose up --exit-code-from app` to start Caddy & the application.
-3.  ???
-4.  Run `docker compose down` to clean up.
+
+### First time setup
+
+1.  Create a copy of `Caddyfile.example` named `Caddyfile` (without a file extension!) and replace the first line with
+    the domain that the site will be hosted on.
+
+    The compose file (and Caddyfile) assume that your working directory contains a provisioned SSL certificate; the
+    certificate itself should reside in `cert.pem`, and the private key should live in `key.pem`.
+
+    If you're using Tailscale, you can use a Tailscale domain name along with a Tailscale-provisioned HTTPS certificate
+    to make things easier to run locally. `tailscale cert` is your friend.
+2.  Run `docker volume create caddy_data` to create the (external) volume used by Caddy. **This volume is persistent**.
+3.  Run `docker buildx bake` to build a docker image for the application. **You will have to re-run this step when
+    pulling changes!**
+
+### Running it
+
+1.  Run `docker compose up --exit-code-from app` to start Caddy & the application.
+2.  Leave it running until hell freezes over.
+3.  Once everything has stopped, run `docker compose down -v` to clean up. It is **unfathomably important** that you
+    pass the `-v` flag here, otherwise certain volumes created by the compose file will *not* be cleaned up, and you'll
+    be left scratching your head when things seem out of date.
+
+## Doing it the hard way
+
+If you're not a Docker person, you have more work to do. Don't say I didn't warn you!
 
 ### Routing
 

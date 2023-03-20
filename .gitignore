@@ -18,6 +18,7 @@ decktracker/dist
 
 # Application configuration file
 App.toml
+Caddyfile
 
 # SSL/TLS certificate woes
 *.pem
