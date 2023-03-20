@@ -31,23 +31,82 @@ It was cute in its own kinda way, though. */
   --plain: #f6f4f3;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --theme-body-bg-color: var(--blackish);
+    --theme-body-text-color: var(--plain);
+
+    --theme-a-text-color: var(--plain);
+
+    --theme-code-bg-color: var(--greyish);
+    --theme-code-text-color: var(--sakura);
+
+    --theme-pre-bg-color: var(--greyish);
+    --theme-pre-text-color: var(--sakura);
+    --theme-pre-border-color: transparent;
+
+    --theme-blockquote-bg-color: var(--greyish);
+    --theme-blockquote-border-color: transparent;
+
+    --theme-table-border-color: var(--parchment);
+
+    --theme-navbar-logo-rest-color: var(--blackish);
+
+    --theme-post-list-item-border-color: var(--greyish);
+    --theme-post-description-border-color: var(--greyish);
+    --theme-post-timestamp-text-color: var(--parchment);
+
+    --theme-hl-comment-color: var(--parchment);
+    --theme-hl-literal-color: var(--sakura);
+    --theme-hl-keyword-color: var(--faint);
+    --theme-hl-variable-color: var(--sky);
+    --theme-hl-punctuation-color: var(--plain);
+    --theme-hl-constant-color: var(--emerald);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --theme-body-bg-color: var(--plain);
+    --theme-body-text-color: var(--blackish);
+
+    --theme-a-text-color: var(--blackish);
+
+    --theme-code-bg-color: var(--wispy);
+    --theme-code-text-color: var(--greyish);
+
+    --theme-pre-bg-color: var(--plain);
+    --theme-pre-text-color: var(--blackish);
+    --theme-pre-border-color: var(--blackish);
+
+    --theme-blockquote-bg-color: var(--plain);
+    --theme-blockquote-border-color: var(--blackish);
+
+    --theme-table-border-color: var(--greyish);
+
+    --theme-navbar-logo-rest-color: var(--plain);
+
+    --theme-post-list-item-border-color: var(--wispy);
+    --theme-post-description-border-color: var(--wispy);
+    --theme-post-timestamp-text-color: var(--metallica);
+
+    --theme-hl-comment-color: var(--faint);
+    --theme-hl-literal-color: var(--emerald);
+    --theme-hl-keyword-color: var(--greyish);
+    --theme-hl-variable-color: var(--depths);
+    --theme-hl-punctuation-color: var(--blackish);
+    --theme-hl-constant-color: var(--wine);
+  }
+}
+
 body {
   display: flex;
   flex-direction: column;
   font-family: "Noto Sans";
   margin: 0 auto;
-}
 
-/* TODO: extract theme-specific colours into CSS variables to avoid repetition of rules */
-
-.theme-dark body {
-  background-color: var(--blackish);
-  color: var(--plain);
-}
-
-.theme-light body {
-  background-color: var(--plain);
-  color: var(--blackish);
+  background-color: var(--theme-body-bg-color);
+  color: var(--theme-body-text-color);
 }
 
 /* This is an attempt at fixing an absolutely vexing display inconsistency on firefox mobile */
@@ -152,14 +211,7 @@ h6 {
 a {
   text-decoration-color: var(--warm-pink);
   text-decoration-thickness: 2px;
-}
-
-.theme-dark a {
-  color: var(--plain);
-}
-
-.theme-light a {
-  color: var(--blackish);
+  color: var(--theme-a-text-color);
 }
 
 a:hover {
@@ -176,20 +228,12 @@ a:active {
 /* Inline code needs its own rounding and background. */
 
 code {
-  border-radius: 0.125rem;
   padding: 0.1rem;
   /* We leave font-weight inherited as we use inline code in some headings */
   font-family: "Noto Sans Mono", monospace;
-}
-
-.theme-dark code {
-  background-color: var(--greyish);
-  color: var(--sakura);
-}
-
-.theme-light code {
-  background-color: var(--wispy);
-  color: var(--greyish);
+  border-radius: 0.125rem;
+  background-color: var(--theme-code-bg-color);
+  color: var(--theme-code-text-color);
 }
 
 pre {
@@ -197,30 +241,20 @@ pre {
   padding: 0.5rem;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-}
 
-.theme-dark pre {
-  background-color: var(--greyish);
-  color: var(--sakura);
-}
-
-.theme-light pre {
-  background-color: var(--plain);
-  color: var(--blackish);
-  border: 2px solid var(--blackish);
+  background-color: var(--theme-pre-bg-color);
+  color: var(--theme-pre-text-color);
+  border: 2px solid var(--theme-pre-border-color);
 }
 
 /* Code inside a `pre` block does not need the styling that inline code does. */
 
 pre code {
-  border-radius: 0rem;
   padding: 0rem;
   max-width: 100%;
-}
-
-.theme-light pre code {
-  background-color: var(--plain);
+  border-radius: 0rem;
   border: none;
+  background-color: transparent;
 }
 
 blockquote {
@@ -228,15 +262,9 @@ blockquote {
   border-radius: 0.25rem;
   padding: 0.5rem 1rem;
   margin: auto 0;
-}
 
-.theme-dark blockquote {
-  background-color: var(--greyish);
-}
-
-.theme-light blockquote {
-  background-color: var(--plain);
-  outline: 2px solid var(--blackish);
+  background-color: var(--theme-blockquote-bg-color);
+  outline: 2px solid var(--theme-blockquote-border-color);
 }
 
 blockquote p {
@@ -259,16 +287,7 @@ thead {
 td,
 th {
   padding: 0.5rem 0.5rem;
-}
-
-.theme-dark td,
-.theme-dark th {
-  border: 1px solid var(--parchment);
-}
-
-.theme-light td,
-.theme-light th {
-  border: 1px solid var(--greyish);
+  border: 1px solid var(--theme-table-border-color);
 }
 
 li::marker {
@@ -312,19 +331,12 @@ img {
 .navbar-logo {
   background-color: var(--hot-pink);
   display: inline-block;
+  margin: 0;
+  padding: 0.5rem 1rem;
   font-size: 2.5rem;
   font-family: "Noto Sans Display", sans-serif;
   font-weight: 700;
-  margin: 0;
-  padding: 0.5rem 1rem;
-}
-
-.theme-dark .navbar-logo {
-  color: var(--blackish);
-}
-
-.theme-light .navbar-logo {
-  color: var(--plain);
+  color: var(--theme-body-bg-color);
 }
 
 .navbar-content {
@@ -346,25 +358,13 @@ img {
   display: inline-block;
   align-self: stretch;
   flex-grow: 1;
-}
 
-.theme-dark .navbar-rest {
   background-image: repeating-linear-gradient(
     45deg,
     transparent,
     transparent 0.5rem,
-    var(--blackish) 0.5rem,
-    var(--blackish) 1rem
-  );
-}
-
-.theme-light .navbar-rest {
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 0.5rem,
-    var(--plain) 0.5rem,
-    var(--plain) 1rem
+    var(--theme-body-bg-color) 0.5rem,
+    var(--theme-body-bg-color) 1rem
   );
 }
 
@@ -393,14 +393,7 @@ img {
 .post-list-item {
   display: block;
   padding: 1rem 0;
-}
-
-.theme-dark .post-list-item {
-  border-bottom: solid var(--greyish);
-}
-
-.theme-light .post-list-item {
-  border-bottom: solid var(--wispy);
+  border-bottom: solid var(--theme-post-list-item-border-color);
 }
 
 .post-description {
@@ -411,21 +404,15 @@ img {
   content: "";
   display: block;
   margin: 1rem 0;
-}
-
-.theme-dark .post-description::after {
-  border-bottom: solid var(--greyish);
-}
-
-.theme-dark .post-description::after {
-  border-bottom: solid var(--wispy);
+  border-bottom: solid var(--theme-post-description-border-color);
 }
 
 .post-list .post-list-item:last-of-type {
   border-bottom: none;
 }
 
-.post-list-item .post-header, .post-description .post-header {
+.post-list-item .post-header,
+.post-description .post-header {
   margin: 0 auto;
 }
 
@@ -435,36 +422,18 @@ and co, which is undesirable */
 .post-list-item .post-timestamp,
 .post-description .post-timestamp {
   margin: 0.25rem 0 0;
-}
-
-.theme-dark .post-list-item .post-timestamp,
-.theme-dark .post-description .post-timestamp {
-  color: var(--parchment);
-}
-
-.theme-light .post-list-item .post-timestamp,
-.theme-light .post-description .post-timestamp {
-  color: var(--metallica);
+  color: var(--theme-post-timestamp-text-color);
 }
 
 /* The following is simply theming for highlighting */
 
-.theme-dark .hl-comment {
-  color: var(--parchment);
+.hl-comment {
+  color: var(--theme-hl-comment-color);
 }
 
-.theme-light .hl-comment {
-  color: var(--faint);
-}
-
-.theme-dark .hl-constant.hl-numeric,
-.theme-dark .hl-string {
-  color: var(--sakura);
-}
-
-.theme-light .hl-constant.hl-numeric,
-.theme-light .hl-string {
-  color: var(--emerald);
+.hl-constant.hl-numeric,
+.hl-string {
+  color: var(--theme-hl-constant-color);
 }
 
 .hl-keyword.hl-control,
@@ -492,82 +461,44 @@ and co, which is undesirable */
   color: var(--hot-pink)
 }
 
-.theme-dark .hl-storage.hl-modifier,
-.theme-dark .hl-keyword.hl-operator,
-.theme-dark .hl-punctuation.hl-accessor,
-.theme-dark .hl-storage.hl-type.hl-impl,
-.theme-dark .hl-storage.hl-type.hl-function,
-.theme-dark .hl-storage.hl-type.hl-declaration,
-.theme-dark .hl-keyword.hl-control.hl-rust.hl-async,
-.theme-dark .hl-keyword.hl-other,
-.theme-dark .hl-entity.hl-name.hl-constant {
-  color: var(--faint);
+.hl-storage.hl-modifier,
+.hl-keyword.hl-operator,
+.hl-punctuation.hl-accessor,
+.hl-storage.hl-type.hl-impl,
+.hl-storage.hl-type.hl-function,
+.hl-storage.hl-type.hl-declaration,
+.hl-keyword.hl-control.hl-rust.hl-async,
+.hl-keyword.hl-other,
+.hl-entity.hl-name.hl-constant {
+  color: var(--theme-hl-keyword-color);
 }
 
-.theme-light .hl-storage.hl-modifier,
-.theme-light .hl-keyword.hl-operator,
-.theme-light .hl-punctuation.hl-accessor,
-.theme-light .hl-storage.hl-type.hl-impl,
-.theme-light .hl-storage.hl-type.hl-function,
-.theme-light .hl-storage.hl-type.hl-declaration,
-.theme-light .hl-keyword.hl-control.hl-rust.hl-async,
-.theme-light .hl-keyword.hl-other,
-.theme-light .hl-entity.hl-name.hl-constant {
-  color: var(--greyish);
+.hl-parameter.hl-variable,
+.hl-variable.hl-function,
+.hl-entity.hl-other,
+.hl-constant.hl-other,
+.hl-source {
+  color: var(--theme-hl-variable-color);
 }
 
-.theme-dark .hl-parameter.hl-variable,
-.theme-dark .hl-variable.hl-function,
-.theme-dark .hl-entity.hl-other,
-.theme-dark .hl-constant.hl-other,
-.theme-dark .hl-source {
-  color: var(--sky);
-}
-
-.theme-light .hl-parameter.hl-variable,
-.theme-light .hl-variable.hl-function,
-.theme-light .hl-entity.hl-other,
-.theme-light .hl-constant.hl-other,
-.theme-light .hl-source {
-  color: var(--depths);
-}
-
-.theme-dark .hl-punctuation.hl-group,
-.theme-dark .hl-punctuation.hl-block,
-.theme-dark .hl-meta.hl-annotation,
-.theme-dark .hl-punctuation.hl-separator,
-.theme-dark .hl-punctuation.hl-terminator,
-.theme-dark .hl-punctuation.hl-definition.hl-table,
-.theme-dark .hl-punctuation.hl-definition.hl-array,
-.theme-dark .hl-punctuation.hl-definition.hl-inline-table,
-.theme-dark .hl-punctuation.hl-definition.hl-key-value,
-.theme-dark .hl-entity.hl-table,
-.theme-dark .hl-meta.hl-annotation > .hl-meta.hl-path,
-.theme-dark .hl-meta.hl-annotation > .hl-meta > .hl-keyword,
-.theme-dark .hl-meta.hl-generic > .hl-punctuation,
-.theme-dark .hl-meta.hl-function > .hl-punctuation,
-.theme-dark .hl-meta.hl-function > .hl-punctuation.hl-comma {
-  color: var(--plain)
-}
-
-.theme-light .hl-punctuation.hl-group,
-.theme-light .hl-punctuation.hl-block,
-.theme-light .hl-meta.hl-annotation,
-.theme-light .hl-punctuation.hl-separator,
-.theme-light .hl-punctuation.hl-terminator,
-.theme-light .hl-punctuation.hl-definition.hl-table,
-.theme-light .hl-punctuation.hl-definition.hl-array,
-.theme-light .hl-punctuation.hl-definition.hl-inline-table,
-.theme-light .hl-punctuation.hl-definition.hl-key-value,
-.theme-light .hl-entity.hl-table,
-.theme-light .hl-meta.hl-annotation > .hl-meta.hl-path,
-.theme-light .hl-meta.hl-annotation > .hl-meta > .hl-keyword,
-.theme-light .hl-meta.hl-generic > .hl-punctuation,
-.theme-light .hl-meta.hl-function > .hl-punctuation,
-.theme-light .hl-meta.hl-function > .hl-punctuation.hl-comma {
-  color: var(--blackish)
+.hl-punctuation.hl-group,
+.hl-punctuation.hl-block,
+.hl-meta.hl-annotation,
+.hl-punctuation.hl-separator,
+.hl-punctuation.hl-terminator,
+.hl-punctuation.hl-definition.hl-table,
+.hl-punctuation.hl-definition.hl-array,
+.hl-punctuation.hl-definition.hl-inline-table,
+.hl-punctuation.hl-definition.hl-key-value,
+.hl-entity.hl-table,
+.hl-meta.hl-annotation > .hl-meta.hl-path,
+.hl-meta.hl-annotation > .hl-meta > .hl-keyword,
+.hl-meta.hl-generic > .hl-punctuation,
+.hl-meta.hl-function > .hl-punctuation,
+.hl-meta.hl-function > .hl-punctuation.hl-comma {
+  color: var(--theme-hl-punctuation-color)
 }
 
 .hl-constant {
-  color: var(--emerald);
+  color: var(--theme-hl-constant-color);
 }

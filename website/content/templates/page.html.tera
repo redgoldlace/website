@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="theme-dark">
+<html lang="en">
   <head>
     <title>{% block title %} {{ title | default(value="Kaylynn's website") | escape }} {% endblock title %}</title>
     <meta charset="utf-8" />
