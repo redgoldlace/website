@@ -169,7 +169,12 @@ where
         None => format!("Status code {} (no details provided...)", code),
     };
 
-    Page::new("error", context!("reason" => reason))
+    let context = context!(
+        "reason" => reason,
+        "hide_navbar" => true,
+    );
+
+    Page::new("error", context)
         .render(state.engine())
         .map(|html| (response.status(), html))
         .into_response()

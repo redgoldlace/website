@@ -125,6 +125,7 @@ impl IntoPage for PostMetadata {
                 "description" => description,
                 "published" => self.published.to_rfc3339(),
                 "content" => markdown::render(document),
+                "is_blog_post" => true,
             },
         )
     }
