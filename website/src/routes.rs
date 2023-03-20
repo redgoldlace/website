@@ -180,7 +180,7 @@ pub async fn deploy(
 
     // We only want to trigger a shutdown once the actions run is completed and a new image is present on Docker Hub
     if payload["action"] == "completed" {
-        shutdown.notify().await;
+        shutdown.notify();
     }
 
     Ok(())
