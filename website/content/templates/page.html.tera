@@ -19,7 +19,7 @@
       rel="alternate"
       type="application/rss+xml"
       title="{{ title }}"
-      href="https://kaylynn.gay/blog/feed"
+      href="https://kaylynn.gay/blog/feed.rss"
     />
     {% endif %}
   </head>

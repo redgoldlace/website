@@ -111,7 +111,7 @@ async fn run() -> Result<(), Error> {
         .route("/about", get(routes::simple("pages/about.md")))
         .route("/deploy", post(routes::deploy))
         .route("/blog", get(routes::post_list))
-        .route("/blog/feed", get(routes::rss_feed))
+        .route("/blog/feed.rss", get(routes::rss_feed))
         .route("/blog/post/:slug", get(routes::post))
         .layer(services);
 
