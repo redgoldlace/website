@@ -15,3 +15,6 @@ decktracker/dist
 
 # Vite cache (or something to that effect)
 .vite
+
+# Application configuration file
+App.toml
