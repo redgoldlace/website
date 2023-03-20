@@ -13,6 +13,6 @@ kaylynn.gay {
     }
 
     handle {
-        reverse_proxy host.docker.internal:8080
+        reverse_proxy 127.0.0.1:8080
     }
 }
