@@ -6,7 +6,13 @@ use std::{
     task::{Context as TaskContext, Poll},
 };
 
-use crate::{context, page::Page, shutdown::Shutdown, state::State};
+use crate::{
+    context,
+    error::{HttpError, HttpResult},
+    page::Page,
+    shutdown::Shutdown,
+    state::State,
+};
 use axum::{
     body::Bytes,
     extract::{FromRequestParts, Path},
@@ -33,14 +39,10 @@ impl StaticPage {
 }
 
 impl Future for StaticPage {
-    type Output = Result<Html<String>, (StatusCode, String)>;
+    type Output = HttpResult<Html<String>>;
 
     fn poll(self: Pin<&mut Self>, _cx: &mut TaskContext<'_>) -> Poll<Self::Output> {
-        let result = Page::simple(&self.path)
-            .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error.to_string()))
-            .and_then(|page| page.render(&self.state.engine()));
-
-        Poll::Ready(result)
+        Poll::Ready(Page::simple(&self.path).and_then(|page| page.render(&self.state.engine())))
     }
 }
 
@@ -132,20 +134,20 @@ impl<S> FromRequestParts<S> for Secret
 where
     S: Send + Sync,
 {
-    type Rejection = (StatusCode, &'static str);
+    type Rejection = HttpError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         let raw_signature = parts
             .headers
             .get("X-Hub-Signature-256")
-            .ok_or((StatusCode::UNAUTHORIZED, "Missing signature"))?
+            .ok_or(HttpError::msg("Missing signature").with_status(StatusCode::UNAUTHORIZED))?
             .as_bytes();
 
         std::str::from_utf8(raw_signature)
-            .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UTF-8 in signature"))?
+            .map_err(|_| HttpError::msg("Invalid UTF-8").with_status(StatusCode::BAD_REQUEST))?
             .trim()
             .strip_prefix("sha256=")
-            .ok_or((StatusCode::BAD_REQUEST, "Invalid signature format"))
+            .ok_or(HttpError::msg("Malformed signature").with_status(StatusCode::BAD_REQUEST))
             .map(str::to_owned)
             .map(Secret)
     }
@@ -156,11 +158,11 @@ pub async fn deploy(
     request_secret: Secret,
     state: State,
     body: Bytes,
-) -> Result<(), (StatusCode, &'static str)> {
+) -> HttpResult<()> {
     let secret = state
         .config()
         .webhook_secret()
-        .ok_or((StatusCode::SERVICE_UNAVAILABLE, "No secret configured"))?
+        .ok_or(HttpError::msg("No secret configured").with_status(StatusCode::SERVICE_UNAVAILABLE))?
         .as_bytes();
 
     let sha = Hmac::<Sha256>::new_from_slice(secret)
@@ -171,12 +173,13 @@ pub async fn deploy(
         .encode_hex::<String>();
 
     if sha != request_secret.value() {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid signature"));
+        return Err(HttpError::msg("Invalid signature").with_status(StatusCode::UNAUTHORIZED));
     }
 
     let raw = String::from_utf8_lossy(body.as_ref());
-    let payload = Value::from_str(&raw)
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid JSON in request body"))?;
+    let payload = Value::from_str(&raw).map_err(|_| {
+        HttpError::msg("Invalid JSON in request body").with_status(StatusCode::BAD_REQUEST)
+    })?;
 
     // We only want to trigger a shutdown once the actions run is completed and a new image is present on Docker Hub
     if payload["action"] == "completed" {

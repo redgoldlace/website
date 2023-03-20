@@ -2118,6 +2118,7 @@ dependencies = [
  "sha2 0.9.9",
  "syntect",
  "tera",
+ "thiserror",
  "tokio",
  "toml",
  "tower",

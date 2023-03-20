@@ -4,18 +4,20 @@ use axum::{
     Extension, Router, Server,
 };
 use chrono::{DateTime, Utc};
+use error::Error;
 use lazy_static::lazy_static;
 use shutdown::Shutdown;
 use state::{Config, State};
 use std::{
     net::SocketAddr,
+    process::ExitCode,
     sync::{Arc, RwLock},
     time::SystemTime,
 };
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 use tower::ServiceBuilder;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
-use tracing::{event, span, Instrument, Level};
+use tracing::{event, field::Empty, span, Instrument, Level};
 use tracing_subscriber::fmt::{format::Writer, time::FormatTime};
 
 mod error;
@@ -41,7 +43,20 @@ impl FormatTime for Timer {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> ExitCode {
+    match run().await {
+        Ok(()) => {
+            event!(Level::INFO, error = Empty, "server closed gracefully");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            event!(Level::ERROR, %error, "server closed with error");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+async fn run() -> Result<(), Error> {
     tracing_subscriber::fmt()
         .with_target(false)
         .with_ansi(true)
@@ -79,6 +94,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (shutdown, signal) = Shutdown::new();
     let state = State::try_new(config)?;
+
+    // This service is just responsible for logging incoming requests. It's not as bad as it looks!
     let trace_service = TraceLayer::new_for_http()
         .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
         .on_response(DefaultOnResponse::new().level(Level::INFO));

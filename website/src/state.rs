@@ -1,4 +1,5 @@
 use crate::{
+    error::Result,
     posts::Posts,
     templates::{self, Engine},
 };
@@ -73,7 +74,7 @@ impl HostConfig {
 pub struct State(Arc<StateInner>);
 
 impl State {
-    pub fn try_new(config: Config) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn try_new(config: Config) -> Result<Self> {
         let mut posts = Posts::new();
         posts.refresh(&config.content_dir.join("blog-pages"))?;
 
@@ -118,7 +119,10 @@ where
 {
     type Rejection = <Extension<State> as FromRequestParts<S>>::Rejection;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &S,
+    ) -> std::result::Result<Self, Self::Rejection> {
         let Extension(state) = Extension::<State>::from_request_parts(parts, state).await?;
 
         Ok(state)

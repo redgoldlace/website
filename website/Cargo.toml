@@ -26,4 +26,5 @@ tower = "0.4"
 bitflags = "2.0"
 tower-http = { version = "0.4", features = ["trace"] }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
-tracing = "0.1.37"
+tracing = "0.1"
+thiserror = "1.0"

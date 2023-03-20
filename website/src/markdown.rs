@@ -9,13 +9,11 @@ use syntect::{
     html::{ClassStyle, ClassedHTMLGenerator},
     util::LinesWithEndings,
 };
-use toml::de::Error as TomlError;
 
-use crate::SYNTAX_SET;
+use crate::{error::Result, SYNTAX_SET};
 
 pub type NodeArena<'a> = &'a Arena<AstNode<'a>>;
 pub type NodeRef<'a> = &'a AstNode<'a>;
-pub type TomlResult<T> = Result<T, TomlError>;
 
 lazy_static! {
     static ref COMRAK_OPTIONS: ComrakOptions = ComrakOptions {
@@ -54,7 +52,7 @@ pub fn render<'a>(document: NodeRef<'a>) -> String {
 /// front matter and deserialized into the type `M`. The front matter is assumed to be in TOML format.
 ///
 /// This function returns an error if deserializing into `M` fails.
-pub fn parse<'a, 'de, M>(arena: NodeArena<'a>, content: &str) -> TomlResult<(M, NodeRef<'a>)>
+pub fn parse<'a, 'de, M>(arena: NodeArena<'a>, content: &str) -> Result<(M, NodeRef<'a>)>
 where
     M: DeserializeOwned,
 {
