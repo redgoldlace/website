@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+  app:
+    image: kaylynn234/kaylynn.gay:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_content:/usr/local/share/kaylynn.gay
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - WOEBLOG_WEBHOOK_SECRET=${WOEBLOG_WEBHOOK_SECRET}
+
+  caddy:
+    image: caddy:2.6
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - app_content:/usr/local/share/kaylynn.gay
+      - caddy_data:/data
+      - caddy_config:/config
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    secrets:
+      - fullchain
+      - privkey
+
+volumes:
+  caddy_data:
+    external: true
+  caddy_config:
+  app_content:
+
+secrets:
+  cert:
+    file: ./cert.pem
+
+  key:
+    file: ./key.pem

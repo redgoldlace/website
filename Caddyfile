@@ -1,0 +1,18 @@
+kaylynn.gay {
+    tls /run/secrets/cert /run/secrets/key {
+        protocols tls1.3
+    }
+
+    root * /usr/local/share/kaylynn.gay/static
+
+    handle {
+        try_files {path} {path}/
+        file_server {
+            pass_thru
+        }
+    }
+
+    handle {
+        reverse_proxy host.docker.internal:8080
+    }
+}

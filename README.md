@@ -14,6 +14,17 @@ The "content directory" can be found in this repository, under `website/content`
 templates used by the application when rendering. You can put this directory wherever you want, but the application
 needs to be configured so that it knows where it is. See the section on configuration for more details.
 
+### The easy way out
+
+Alternatively: "just use Docker"
+
+0.  Make sure your CWD is the repository root. `docker-bake.hcl`, `Dockerfile`, and this very `README.md` should be in
+    your **current directory**. If they're not, it's time to whip out `cd` and fix that.
+1.  Run `docker buildx bake` to build a docker image for the application.
+2.  Run `docker compose up --exit-code-from app` to start Caddy & the application.
+3.  ???
+4.  Run `docker compose down` to clean up.
+
 ### Routing
 
 This application assumes that it's running behind a web server. More specifically, routing should behave like so:
