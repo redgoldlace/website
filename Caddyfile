@@ -1,18 +1,18 @@
-kaylynn.gay {
-    tls /run/secrets/cert /run/secrets/key {
-        protocols tls1.3
-    }
+kaylynn.gay
 
-    root * /usr/local/share/kaylynn.gay/static
+tls /run/secrets/cert /run/secrets/key {
+    protocols tls1.3
+}
 
-    handle {
-        try_files {path} {path}/
-        file_server {
-            pass_thru
-        }
-    }
+root * /usr/local/share/kaylynn.gay/static
 
-    handle {
-        reverse_proxy app:8080
+handle {
+    try_files {path} {path}/
+    file_server {
+        pass_thru
     }
+}
+
+handle {
+    reverse_proxy app:8080
 }
