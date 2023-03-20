@@ -3,6 +3,6 @@
 {% block content %}
 <div class="center">
   <h1>heck...</h1>
-  {{ reason }}
+  {{ reason | escape }}
 </div>
 {% endblock content %}

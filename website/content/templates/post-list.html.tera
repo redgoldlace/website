@@ -9,7 +9,7 @@
   <div class="post-list">
     {% for post in posts %}
       <div class="post-list-item">
-        <h1 class="post-header"><a href="/blog/post/{{ post.slug }}">{{ post.title }}</a></h1>
+        <h1 class="post-header"><a href="/blog/post/{{ post.slug }}">{{ post.title | escape }}</a></h1>
         {{ macros::published_at(when=post.published) }}
       </div>
     {% endfor %}
