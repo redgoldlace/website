@@ -27,8 +27,8 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     secrets:
-      - fullchain
-      - privkey
+      - cert
+      - key
 
 volumes:
   caddy_data:
