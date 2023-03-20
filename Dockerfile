@@ -28,7 +28,7 @@ COPY --from=js_builder /website/dist /usr/local/share/kaylynn.gay/static/decktra
 COPY --from=website_content . /usr/local/share/kaylynn.gay/
 
 ENV WOEBLOG_PROFILE=release
-ENV WOEBLOG_HOST.ADDRESS=172.17.0.1
+ENV WOEBLOG_HOST.ADDRESS=0.0.0.0
 ENV WOEBLOG_HOST.PORT=8080
 ENV WOEBLOG_CONTENT_DIR=/usr/local/share/kaylynn.gay/
 EXPOSE 8080
