@@ -27,9 +27,9 @@ COPY --from=rust_builder /website/target/release/website /usr/local/bin/kaylynn.
 COPY --from=js_builder /website/dist /usr/local/share/kaylynn.gay/static/decktracker
 COPY --from=website_content . /usr/local/share/kaylynn.gay/
 
-WORKDIR /usr/local/share/kaylynn.gay
-ENV ROCKET_PROFILE=release
-ENV ROCKET_ADDRESS=0.0.0.0
-ENV ROCKET_PORT=8080
+ENV WOEBLOG_PROFILE=release
+ENV WOEBLOG_HOST.ADDRESS=0.0.0.0
+ENV WOEBLOG_HOST.PORT=8080
+ENV WOEBLOG_CONTENT_DIR=/usr/local/share/kaylynn.gay/
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/kaylynn.gay"]
