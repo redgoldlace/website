@@ -131,38 +131,46 @@ impl Error {
     }
 }
 
+/// An Axum middleware that routes error responses to a rendered error page.
+///
+/// If the response does not have a status code representing an error, it is returned as-is.
+/// Otherwise, the response is inspected for a failure reason:
+/// - If the content type of the response is "text/plain", the response body is used as the failure reason.
+/// - If the status code of the response has a "canonical reason", this text is used as the failure reason. This
+///   correlates to "Not found" for HTTP 404, and so on.
+///
+/// The failure reason is displayed on the error page, if it can be determined.
 pub async fn to_error_page<B>(state: State, request: Request<B>, next: Next<B>) -> Response
 where
     B: HttpBody,
 {
     let mut response = next.run(request).await;
+
+    // Successful responses need to be returned as-is.
+    if !response.status().is_client_error() && !response.status().is_server_error() {
+        return response;
+    }
+
     let content_type = response
         .headers()
         .get(CONTENT_TYPE)
         .and_then(|value| std::str::from_utf8(value.as_bytes()).ok())
         .unwrap_or("text/plain");
 
-    if response.status().is_success() || !content_type.contains("text/plain") {
-        return response;
-    }
-
-    let body_content = match hyper::body::to_bytes(response.body_mut()).await {
-        Ok(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
-        Err(_) => return response, // How did this happen? Who knows.
+    let body_content = match content_type.contains("text/plain") {
+        true => hyper::body::to_bytes(response.body_mut())
+            .await
+            .ok()
+            .map(|bytes| String::from_utf8_lossy(&bytes).trim().to_owned())
+            .filter(|content| !content.is_empty()),
+        false => None,
     };
 
-    // If there was no explicit message, we should try and derive one from the status.
-    let message = match body_content.trim().is_empty() {
-        true => response
-            .status()
-            .canonical_reason()
-            .map(sentence_case)
-            .map(Cow::from),
-        false => Some(body_content.trim().into()),
-    };
-
-    // However not all status codes have associated canonical messages. If so, we'll just give up. Maybe later we can do
-    // something funny, I dunno.
+    // If there was no explicit failure reason in the body, we should try and derive one from the status code.
+    //
+    // Unfortunately, not all status codes have associated canonical messages. If that's the case here, we'll just give
+    // up. Maybe later we can do something funny, I dunno.
+    let message = body_content.or_else(|| response.status().canonical_reason().map(sentence_case));
     let code = response.status().as_u16();
     let reason = match message {
         Some(message) => format!("Status code {}: {}", code, message),
@@ -176,7 +184,7 @@ where
 
     Page::new("error", context)
         .render(state.engine())
-        .map(|html| (response.status(), html))
+        .into_http_result()
         .into_response()
 }
 
