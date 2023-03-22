@@ -8,7 +8,7 @@ use std::{
 
 use crate::{
     context,
-    error::{HttpError, HttpResult},
+    error::{HttpError, HttpResult, IntoHttpResult},
     page::Page,
     shutdown::Shutdown,
     state::State,
@@ -42,7 +42,11 @@ impl Future for StaticPage {
     type Output = HttpResult<Html<String>>;
 
     fn poll(self: Pin<&mut Self>, _cx: &mut TaskContext<'_>) -> Poll<Self::Output> {
-        Poll::Ready(Page::simple(&self.path).and_then(|page| page.render(&self.state.engine())))
+        Poll::Ready(
+            Page::simple(&self.path)
+                .and_then(|page| page.render(&self.state.engine()))
+                .into_http_result(),
+        )
     }
 }
 
@@ -82,15 +86,17 @@ pub async fn post_list(state: State) -> Response {
         },
     );
 
-    page.render(state.engine()).into_response()
+    page.render(state.engine())
+        .into_http_result()
+        .into_response()
 }
 
 pub async fn post(Path(slug): Path<String>, state: State) -> Response {
     state
         .posts()
         .get(&slug)
-        .map(|page| page.render(state.engine()))
-        .ok_or((StatusCode::NOT_FOUND, "Blog post not found!"))
+        .ok_or(HttpError::msg("Blog post not found!").with_status(StatusCode::NOT_FOUND))
+        .and_then(|page| page.render(state.engine()).into_http_result())
         .into_response()
 }
 
@@ -124,6 +130,10 @@ impl<M: Mac> MacExt for M {
 pub struct Secret(String);
 
 impl Secret {
+    fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+
     fn value(&self) -> &str {
         &self.0
     }
@@ -148,8 +158,7 @@ where
             .trim()
             .strip_prefix("sha256=")
             .ok_or(HttpError::msg("Malformed signature").with_status(StatusCode::BAD_REQUEST))
-            .map(str::to_owned)
-            .map(Secret)
+            .map(Secret::new)
     }
 }
 

@@ -369,6 +369,7 @@ img {
 }
 
 /* Mobile-specific navbar styling */
+
 @media screen and (max-width: 700px) {
   .navbar-logo {
     flex-basis: 100%;

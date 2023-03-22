@@ -8,7 +8,6 @@ use toml::value::Datetime as TomlDateTime;
 
 use crate::{
     context,
-    error::HttpResult,
     error::Result,
     markdown::{self, NodeArena, NodeRef},
     templates::Engine,
@@ -30,7 +29,7 @@ impl Page {
         }
     }
 
-    pub fn simple(path: impl AsRef<Path>) -> HttpResult<Self> {
+    pub fn simple(path: impl AsRef<Path>) -> Result<Self> {
         let content = std::fs::read_to_string(path)?;
         let arena = Arena::new();
         let page = Self::build::<StaticMetadata>(&arena, &content)?;
@@ -68,7 +67,7 @@ impl Page {
             .and_then(|date| DateTime::parse_from_rfc3339(date).ok())
     }
 
-    pub fn render(&self, engine: &Engine) -> HttpResult<Html<String>> {
+    pub fn render(&self, engine: &Engine) -> Result<Html<String>> {
         let result = engine.render(&format!("{}.html.tera", self.template_name), &self.context)?;
 
         Ok(result)
