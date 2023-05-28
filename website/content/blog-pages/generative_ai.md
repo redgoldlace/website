@@ -267,4 +267,5 @@ inspiration for the structuring of a large portion of this blog post.
 And, of course, thanks to you, dear reader, for sticking around until the end!
 
 With love,
+<br>
 \- Kaylynn
