@@ -222,7 +222,7 @@ traditional art and generative AI art are actually the same. They're completely 
 (And, quite frankly, "artistic merit" is a relatively bogus concept; one that is mostly relative to your own level of
 appreciation for the work, but that's a whole other can of worms)
 
-### Suffering of future past
+## Suffering of future past
 
 When you stop looking at generative AI as being *inherently* bad, and instead being "bad in specific contexts" - such as
 the context where it's used to exploit or mistreat artists - some more interesting properties crop up. Something that I
@@ -244,7 +244,7 @@ maybe the first time in your life, you can translate what's in your head into a 
 would genuinely be *ecstatic* in this sort of scenario, and it's fucking awesome that technology has gotten to a point
 where this is possible.
 
-### Closing notes
+## Closing notes
 
 That mostly concludes all of my ramblings for this blog post. I'm sorry to say that, unfortunately, I have no grand
 conclusions to make here, other than "maybe we should think about things a little more" and "maybe we could be nicer to
@@ -252,7 +252,7 @@ each other". My main goal, really, was for this to provoke some sort of internal
 able to see things with a slightly different framing. If you liked this blog post, I'm really glad! If you didn't, well,
 you can let me know! I'm always open to discussion, and I'm always trying to do better.
 
-### Acknowledgements
+## Acknowledgements
 
 I've been blessed to be around a lot of very mature individuals who've talked about this sort of thing at length, and
 who have shown me that it's absolutely not as black-and-white as it's often portrayed. Special thanks go out to a
