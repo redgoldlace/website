@@ -17,8 +17,9 @@ occasionally too, and most of that ends up here on my blog.
 
 ## Find me
 - on [GitHub](https://github.com/kaylynn234). I don't publish repositories here often.
-- on [Twitter](https://twitter.com/KaylynnMorgan2). This is where most of my ramblings go.
-- via [Email](mailto:mkaylynn7@gmail.com). I'm very bad at checking this.
+- on [Bluesky](https://bsky.app/profile/kaylynn.gay) and formerly [Twitter](https://twitter.com/KaylynnMorgan2). This is
+  where most of my ramblings go.
+- via [Email](mailto:kaylynn@kaylynn.gay). I'm very bad at checking this.
 - on Discord as `_kaylynn` - make sure you remember the underscore! Feel free to just send a friend request. I don't bite!
 
 ## Interests & hobbies
