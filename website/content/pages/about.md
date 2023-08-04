@@ -20,7 +20,7 @@ occasionally too, and most of that ends up here on my blog.
 - on [Bluesky](https://bsky.app/profile/kaylynn.gay) and formerly [Twitter](https://twitter.com/KaylynnMorgan2). This is
   where most of my ramblings go.
 - via [Email](mailto:kaylynn@kaylynn.gay). I'm very bad at checking this.
-- on Discord as `_kaylynn` - make sure you remember the underscore! Feel free to just send a friend request. I don't bite!
+- on Discord as `@kaylynn.gay`. Feel free to just send a friend request - I don't bite!
 
 ## Interests & hobbies
 - cats cats cats cats cats cats i love cats
