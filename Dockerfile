@@ -21,7 +21,7 @@ COPY --from=decktracker . .
 RUN yarn install
 RUN yarn build
 
-FROM debian:bullseye-slim AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /website
 COPY --from=rust_builder /website/target/release/website /usr/local/bin/kaylynn.gay
 COPY --from=js_builder /website/dist /usr/local/share/kaylynn.gay/static/decktracker
