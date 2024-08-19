@@ -18,7 +18,6 @@ services:
     restart: unless-stopped
     ports:
       - "7080:80"
-      - "7443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - app_content:/usr/local/share/kaylynn.gay
@@ -26,19 +25,9 @@ services:
       - caddy_config:/config
     extra_hosts:
       - host.docker.internal:host-gateway
-    secrets:
-      - cert
-      - key
 
 volumes:
   caddy_data:
     external: true
   caddy_config:
   app_content:
-
-secrets:
-  cert:
-    file: ./cert.pem
-
-  key:
-    file: ./key.pem
