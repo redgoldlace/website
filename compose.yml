@@ -17,8 +17,8 @@ services:
     image: caddy:2.6
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "7080:80"
+      - "7443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - app_content:/usr/local/share/kaylynn.gay
